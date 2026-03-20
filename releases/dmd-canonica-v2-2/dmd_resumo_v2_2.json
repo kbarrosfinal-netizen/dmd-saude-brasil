@@ -1,0 +1,17 @@
+{
+  "municipios_oficiais_total": 5570,
+  "municipios_com_correspondencia_materializada_estrita_v2_2": 5530,
+  "municipios_validados_criterio_gerencial_v2_2": 5541,
+  "municipios_sem_correspondencia_segura_v2_2": 40,
+  "pendencias_remanescentes_validacao_manual": 28,
+  "homologacoes_manuais_materializadas": 1,
+  "aliases_validados_materializados_v2_2_total": 12,
+  "aliases_novamente_materializados_na_v2_2": 7,
+  "aliases_ja_materializados_confirmados_na_v2_2": 5,
+  "observacao_metrica": "A materialização dos 12 aliases melhora a trilha de auditoria e incorpora as decisões validadas na linha oficial. Isso não altera a quantidade estrita de municípios oficiais com correspondência materializada (5530), porque os 12 aliases apontam para municípios que já estavam cobertos; o critério gerencial permanece em 5541.",
+  "status_counts": {
+    "mapeado_alta_confianca_fase2": 5529,
+    "oficial_sem_correspondencia_segura": 40,
+    "homologado_manual_v2_1": 1
+  }
+}
