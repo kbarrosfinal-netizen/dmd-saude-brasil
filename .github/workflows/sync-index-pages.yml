@@ -1,0 +1,69 @@
+name: Sync index.html for GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "*.html"
+      - ".github/workflows/sync-index-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-index:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select source HTML
+        id: pick
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -f "index.html" ]; then
+            echo "source=index.html" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CANDIDATE=$(ls -1t index-*.html 2>/dev/null | head -n 1 || true)
+
+          if [ -z "$CANDIDATE" ]; then
+            echo "Nenhum arquivo index-*.html encontrado."
+            exit 1
+          fi
+
+          echo "source=$CANDIDATE" >> "$GITHUB_OUTPUT"
+
+      - name: Sync to index.html
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC='${{ steps.pick.outputs.source }}'
+
+          if [ "$SRC" = "index.html" ]; then
+            echo "index.html já existe; nada a sincronizar."
+            exit 0
+          fi
+
+          cp "$SRC" index.html
+
+      - name: Commit synchronized index.html
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet -- index.html; then
+            echo "Nenhuma alteração em index.html."
+            exit 0
+          fi
+
+          git add index.html
+          git commit -m "chore: sync index.html for Pages"
+          git push
