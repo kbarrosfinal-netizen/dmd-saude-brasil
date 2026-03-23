@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EMET DMD Gestão Brasil — Dashboard v6.1</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--azul:#0f2d6e;--azul2:#1d4ed8;--verde:#16a34a;--vm:#dc2626;--am:#d97706;--cinza:#64748b;--fundo:#f0f4f8}
+*{box-sizing:border-box}
+body{background:var(--fundo);font-family:'Segoe UI',system-ui,sans-serif;font-size:13px;margin:0}
+.header{background:linear-gradient(135deg,#071533,#0f2d6e,#1d4ed8);color:#fff;padding:18px 24px}
+.header h1{font-size:1.5rem;font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
+.header p{margin:5px 0 0;opacity:.8;font-size:.82rem}
+.badge-v{background:#1d4ed8;color:#fff;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:600}
+.nav-tabs .nav-link{color:var(--azul);font-weight:500;font-size:.82rem}
+.nav-tabs .nav-link.active{background:var(--azul);color:#fff;border-color:var(--azul)}
+.kpi{background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid var(--azul)}
+.kpi.vm{border-color:var(--vm)} .kpi.verde{border-color:var(--verde)} .kpi.am{border-color:var(--am)}
+.kpi-val{font-size:1.7rem;font-weight:700;color:var(--azul)}
+.kpi.vm .kpi-val{color:var(--vm)} .kpi.verde .kpi-val{color:var(--verde)} .kpi.am .kpi-val{color:var(--am)}
+.kpi-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:var(--cinza);margin-top:2px}
+.kpi-sub{font-size:.7rem;color:var(--cinza)}
+.card{border:none;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.table-sm td,.table-sm th{padding:4px 7px;vertical-align:middle}
+.progress{height:7px;border-radius:4px}
+.badge-risco-ALTO{background:#dc2626;color:#fff;padding:2px 7px;border-radius:20px;font-size:.68rem;font-weight:600}
+.badge-risco-MEDIO{background:#d97706;color:#fff;padding:2px 7px;border-radius:20px;font-size:.68rem;font-weight:600}
+.badge-risco-BAIXO{background:#16a34a;color:#fff;padding:2px 7px;border-radius:20px;font-size:.68rem;font-weight:600}
+.status-bar{background:#fff;padding:8px 24px;border-bottom:1px solid #dde;display:flex;gap:20px;flex-wrap:wrap;font-size:.75rem}
+.status-item{display:flex;align-items:center;gap:5px}
+footer{background:var(--azul);color:#fff;padding:12px 24px;text-align:center;font-size:.75rem;margin-top:30px}
+.tooltip-custom{cursor:help;border-bottom:1px dashed var(--cinza)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <h1><i class="bi bi-hospital"></i> EMET DMD Gestão Brasil
+    <span class="badge-v">v6.1</span>
+  </h1>
+  <p>Banco integrado: DMD v37 (5.569 mun. · 111 colunas) + Dashboard Nacional v3 (psiq, UTI, ESF, déficit psiquiátrico) · 27 UFs · Atualizado: 23/03/2026</p>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="status-item"><span style="color:#16a34a">●</span> Pipeline v5.1 Ativo</div>
+  <div class="status-item"><span style="color:#1d4ed8">●</span> PySUS + FTP DATASUS</div>
+  <div class="status-item"><span style="color:#d97706">●</span> CNES Real: 1.1% (62 mun.)</div>
+  <div class="status-item"><span style="color:#dc2626">●</span> Próx. coleta: 20/04/2026</div>
+  <div class="status-item"><span style="color:#64748b">●</span> GitHub Pages: Ativo</div>
+</div>
+
+<div class="container-fluid px-3 py-3">
+
+<!-- ALERTA PRINCIPAL -->
+<div class="alert alert-danger py-2 mb-3 d-flex align-items-center gap-2">
+  <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+  <span><b>325 alertas fiscais</b> · <b>416 municípios</b> com déficit psiquiátrico · 
+  <b>967 municípios</b> em risco alto · CNES real verificado: <b>0 municípios</b></span>
+</div>
+
+<!-- KPIs -->
+<div class="row g-2 mb-3">
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="kpi">
+      <div class="kpi-val">5.569</div>
+      <div class="kpi-lbl">Municípios</div>
+      <div class="kpi-sub">27 UFs · 5.570 IBGE</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="kpi">
+      <div class="kpi-val">207.2M</div>
+      <div class="kpi-lbl">Habitantes</div>
+      <div class="kpi-sub">Censo IBGE 2022</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="kpi verde">
+      <div class="kpi-val">3,715</div>
+      <div class="kpi-lbl">CAPS Ativos</div>
+      <div class="kpi-sub">Saúde Mental</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="kpi">
+      <div class="kpi-val">335</div>
+      <div class="kpi-lbl">SRT</div>
+      <div class="kpi-sub">Res. Terapêuticas</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="kpi am">
+      <div class="kpi-val">424,350</div>
+      <div class="kpi-lbl">Leitos SUS</div>
+      <div class="kpi-sub">+8,400 HG</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="kpi">
+      <div class="kpi-val">3,239</div>
+      <div class="kpi-lbl">Leitos UTI</div>
+      <div class="kpi-sub">Dados v3</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="kpi">
+      <div class="kpi-val">2,080</div>
+      <div class="kpi-lbl">Psiq. Cadastrados</div>
+      <div class="kpi-sub">CNES/CRM</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="kpi vm">
+      <div class="kpi-val">416</div>
+      <div class="kpi-lbl">Déficit Psiq.</div>
+      <div class="kpi-sub">Municípios afetados</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="kpi vm">
+      <div class="kpi-val">325</div>
+      <div class="kpi-lbl">Alertas Fiscais</div>
+      <div class="kpi-sub">Subfinanciamento</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="kpi verde">
+      <div class="kpi-val">5.2%</div>
+      <div class="kpi-lbl">Cobertura ESF</div>
+      <div class="kpi-sub">Média nacional</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="kpi vm">
+      <div class="kpi-val">967</div>
+      <div class="kpi-lbl">Risco Alto</div>
+      <div class="kpi-sub">Mun. vulneráveis</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="kpi verde">
+      <div class="kpi-val">0</div>
+      <div class="kpi-lbl">CNES Verificado</div>
+      <div class="kpi-sub">Fonte real</div>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<ul class="nav nav-tabs mb-2 flex-wrap" id="tabs">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#t1"><i class="bi bi-bar-chart"></i> Painel UF</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t2"><i class="bi bi-brain"></i> Saúde Mental</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t3"><i class="bi bi-exclamation-triangle"></i> Risco / Alerta</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t4"><i class="bi bi-hospital"></i> UTI & Psiquiatria</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t5"><i class="bi bi-list-ol"></i> Ranking Crítico</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t6"><i class="bi bi-database-check"></i> Cobertura CNES</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t7"><i class="bi bi-gear"></i> Pipeline</button></li>
+</ul>
+
+<div class="tab-content">
+
+<!-- TAB 1: Painel UF -->
+<div class="tab-pane fade show active" id="t1">
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card p-3">
+        <h6 class="mb-2 fw-bold">Score Médio de Saúde por UF (menor = mais crítico)</h6>
+        <canvas id="cScore" height="280"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card p-3 mb-3">
+        <h6 class="fw-bold mb-2">Distribuição de Risco por UF</h6>
+        <canvas id="cRisco" height="200"></canvas>
+      </div>
+      <div class="card p-3">
+        <h6 class="fw-bold mb-2">CAPS por Região</h6>
+        <canvas id="cCaps" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="card mt-3">
+    <div class="card-header fw-bold d-flex justify-content-between">
+      <span>📋 Indicadores por UF — Banco Integrado v37 + v3</span>
+      <span class="badge bg-primary">27 UFs · 5,569 municípios</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>UF</th><th>Mun.</th><th>Pop.</th><th>CAPS</th><th>SRT</th>
+            <th>Leitos SUS</th><th>UTI</th><th>Psiq.Cad</th><th>Déficit</th>
+            <th>Alertas</th><th>ESF%</th><th>Score</th><th>Risco</th><th>CNES✓</th>
+          </tr>
+        </thead>
+        <tbody id="tbUF"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: Saúde Mental -->
+<div class="tab-pane fade" id="t2">
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card p-3">
+        <h6 class="fw-bold">CAPS por UF</h6>
+        <canvas id="cCapsUF" height="300"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card p-3">
+        <h6 class="fw-bold">Psiquiatras Cadastrados vs Déficit por UF</h6>
+        <canvas id="cPsiq" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="card mt-3 p-3">
+    <h6 class="fw-bold mb-2">🧠 Municípios com Maior Déficit Psiquiátrico</h6>
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="table-dark">
+          <tr><th>#</th><th>UF</th><th>Município</th><th>Pop.</th><th>Psiq.Cad</th><th>Déficit</th><th>LQ</th></tr>
+        </thead>
+        <tbody id="tbDef"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: Risco / Alerta -->
+<div class="tab-pane fade" id="t3">
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card p-3">
+        <h6 class="fw-bold">Alertas Fiscais por UF</h6>
+        <canvas id="cAlerta" height="300"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card p-3">
+        <h6 class="fw-bold">Mapa de Risco (Score Médio por UF)</h6>
+        <canvas id="cRiscoBar" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="card mt-3 p-3">
+    <div class="row g-3">
+      <div class="col-md-4 text-center">
+        <div class="display-6 text-danger fw-bold" id="kAlto"></div>
+        <div class="text-muted small">Municípios Risco ALTO</div>
+        <div class="progress mt-2"><div id="pAlto" class="progress-bar bg-danger" style="width:0%"></div></div>
+      </div>
+      <div class="col-md-4 text-center">
+        <div class="display-6 text-warning fw-bold" id="kMedio"></div>
+        <div class="text-muted small">Municípios Risco MÉDIO</div>
+        <div class="progress mt-2"><div id="pMedio" class="progress-bar bg-warning" style="width:0%"></div></div>
+      </div>
+      <div class="col-md-4 text-center">
+        <div class="display-6 text-success fw-bold" id="kBaixo"></div>
+        <div class="text-muted small">Municípios Risco BAIXO</div>
+        <div class="progress mt-2"><div id="pBaixo" class="progress-bar bg-success" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 4: UTI & Psiquiatria -->
+<div class="tab-pane fade" id="t4">
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card p-3">
+        <h6 class="fw-bold">Leitos UTI por UF (dados v3)</h6>
+        <canvas id="cUTI" height="300"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card p-3">
+        <h6 class="fw-bold">Leitos SUS vs UTI vs HG por UF</h6>
+        <canvas id="cLeitos" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="card mt-3 p-3">
+    <h6 class="fw-bold">📊 Resumo Assistencial por UF</h6>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped mb-0">
+        <thead class="table-dark">
+          <tr><th>UF</th><th>Pop.</th><th>Leitos SUS</th><th>Leitos/1k</th><th>UTI</th><th>UTI/1k</th><th>HG</th><th>Psiq.Cad</th><th>Psiq/100k</th></tr>
+        </thead>
+        <tbody id="tbUTI"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 5: Ranking Crítico -->
+<div class="tab-pane fade" id="t5">
+  <div class="alert alert-warning py-2">
+    <i class="bi bi-info-circle"></i> Municípios ranqueados por score combinado de déficit, alertas fiscais e cobertura de saúde (menor score = mais crítico).
+  </div>
+  <div class="card">
+    <div class="card-header fw-bold">🔴 Top 20 Municípios Mais Críticos — Banco Integrado v6.1</div>
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="table-dark">
+          <tr><th>#</th><th>UF</th><th>Município</th><th>Pop.</th><th>CAPS</th><th>Déficit</th><th>ESF%</th><th>UTI</th><th>Score</th></tr>
+        </thead>
+        <tbody id="tbTop20"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 6: Cobertura CNES -->
+<div class="tab-pane fade" id="t6">
+  <div class="row g-3">
+    <div class="col-lg-7">
+      <div class="card p-3">
+        <h6 class="fw-bold">Cobertura CNES Real por UF</h6>
+        <canvas id="cCNES" height="300"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card p-3">
+        <h6 class="fw-bold mb-2">📡 Status de Cobertura</h6>
+        <table class="table table-sm">
+          <tr><th>Fonte</th><th>Municípios</th><th>%</th></tr>
+          <tr><td><span class="badge bg-success">CNES Real</span></td><td id="k1"></td><td id="k1p"></td></tr>
+          <tr><td><span class="badge bg-primary">v3 Enriquecido</span></td><td>449</td><td>8.1%</td></tr>
+          <tr><td><span class="badge bg-secondary">DMD v37</span></td><td>5.569</td><td>100%</td></tr>
+          <tr><td><span class="badge bg-warning text-dark">Sem dados CNES</span></td><td id="k2"></td><td id="k2p"></td></tr>
+        </table>
+        <hr/>
+        <h6 class="fw-bold mb-2">🗓️ Cronograma de Coleta</h6>
+        <div style="font-size:.8rem">
+          <div class="d-flex justify-content-between mb-1"><span>FASE 1 (7 UFs)</span><span class="badge bg-success">Concluída</span></div>
+          <div class="d-flex justify-content-between mb-1"><span>FASE 2 (7 UFs)</span><span class="badge bg-warning text-dark">Abr/2026</span></div>
+          <div class="d-flex justify-content-between mb-1"><span>FASE 3 (7 UFs)</span><span class="badge bg-secondary">Mai/2026</span></div>
+          <div class="d-flex justify-content-between mb-1"><span>FASE 4 (6 UFs)</span><span class="badge bg-secondary">Jun/2026</span></div>
+          <div class="d-flex justify-content-between"><span>100% Nacional</span><span class="badge bg-danger">Jul/2026</span></div>
+        </div>
+        <div class="mt-3">
+          <div class="fw-bold mb-1" style="font-size:.8rem">Progresso Global</div>
+          <div class="progress" style="height:16px">
+            <div class="progress-bar bg-success" style="width:8%">8%</div>
+            <div class="progress-bar bg-primary" style="width:10%">+v3</div>
+            <div class="progress-bar bg-secondary" style="width:82%; opacity:.4"></div>
+          </div>
+          <div style="font-size:.72rem;color:#666;margin-top:3px">Meta: 100% julho/2026</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 7: Pipeline -->
+<div class="tab-pane fade" id="t7">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h6 class="fw-bold mb-3">⚙️ Pipeline DMD v5.1 — Fluxo de Dados</h6>
+        <div style="font-family:monospace;font-size:.78rem;background:#1e293b;color:#e2e8f0;padding:16px;border-radius:8px;line-height:1.8">
+          <span style="color:#38bdf8">DATASUS FTP</span> → 00_coletor_cnes.py<br/>
+          <span style="color:#38bdf8">TabNet HTTP</span>&nbsp;&nbsp;→ 01_coletor_tabnet.py<br/>
+          <span style="color:#fbbf24">DMD v37 Excel</span> → 02_normalizador.py<br/>
+          <span style="color:#fbbf24">Dashboard v3</span>&nbsp; → merge enriquecimento<br/>
+          <span style="color:#4ade80">JSON 304KB</span>&nbsp;&nbsp;&nbsp; → 03_gerar_dashboard.py<br/>
+          <span style="color:#4ade80">HTML 25KB</span>&nbsp;&nbsp;&nbsp;&nbsp; → GitHub Pages<br/>
+          <span style="color:#c084fc">Cron 20/mês</span>&nbsp; → pipeline-mensal.yml<br/>
+        </div>
+        <div class="mt-3">
+          <div class="row g-2">
+            <div class="col-6"><div class="card p-2 text-center bg-light">
+              <div class="fw-bold" style="color:#1d4ed8">PySUS</div>
+              <div style="font-size:.7rem">Coleta CNES/SUS</div>
+            </div></div>
+            <div class="col-6"><div class="card p-2 text-center bg-light">
+              <div class="fw-bold" style="color:#16a34a">FTP DATASUS</div>
+              <div style="font-size:.7rem">Backup fallback</div>
+            </div></div>
+            <div class="col-6"><div class="card p-2 text-center bg-light">
+              <div class="fw-bold" style="color:#d97706">GitHub Actions</div>
+              <div style="font-size:.7rem">Automação mensal</div>
+            </div></div>
+            <div class="col-6"><div class="card p-2 text-center bg-light">
+              <div class="fw-bold" style="color:#7c3aed">GitHub Pages</div>
+              <div style="font-size:.7rem">Deploy automático</div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card p-3">
+        <h6 class="fw-bold mb-3">📦 Artefatos & Versões</h6>
+        <table class="table table-sm">
+          <thead><tr><th>Arquivo</th><th>Tamanho</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>00_coletor_cnes.py</td><td>8.5 KB</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>01_coletor_tabnet.py</td><td>6.6 KB</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>02_normalizador.py</td><td>9.5 KB</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>03_gerar_dashboard.py</td><td>19 KB</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>04_orquestrador.py</td><td>6.0 KB</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>pipeline-mensal.yml</td><td>19 KB</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>deploy-pages.yml</td><td>1.7 KB</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>dashboard_data.json</td><td>304 KB</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>dmd_banco_integrado_v37_v3</td><td>~3 MB</td><td><span class="badge bg-success">✓</span></td></tr>
+            <tr><td>dmd-pipeline-v51-deploy.zip</td><td>48 KB</td><td><span class="badge bg-primary">Download</span></td></tr>
+          </tbody>
+        </table>
+        <hr/>
+        <h6 class="fw-bold">🔗 Links</h6>
+        <div style="font-size:.8rem">
+          <div>📁 Repo: <a href="https://github.com/kbarrosfinal-netizen/dmd-saude-brasil" target="_blank">kbarrosfinal-netizen/dmd-saude-brasil</a></div>
+          <div>🌐 Pages: <a href="https://kbarrosfinal-netizen.github.io/dmd-saude-brasil/" target="_blank">kbarrosfinal-netizen.github.io/dmd-saude-brasil</a></div>
+          <div>⚡ Commit: <code>a8fda58</code> (pipeline v5.1 · +13.484 linhas)</div>
+        </div>
+      </div>
+      <div class="card p-3 mt-3">
+        <h6 class="fw-bold">📋 Próximos Passos</h6>
+        <ol style="font-size:.8rem;margin-bottom:0;padding-left:18px">
+          <li>Fazer push do commit <code>a8fda58</code> para <code>main</code></li>
+          <li>Habilitar GitHub Pages → Source: GitHub Actions</li>
+          <li>Executar <code>workflow_dispatch</code> FASE_2</li>
+          <li>Monitorar coleta automática em 20/04/2026</li>
+          <li>Meta: 100% CNES real → julho/2026</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /tab-content -->
+</div><!-- /container -->
+
+<footer>
+  EMET DMD Gestão Brasil · Dashboard v6.1 · Banco integrado DMD v37 + v3 · 5.569 municípios · 27 UFs · 111 indicadores · 23/03/2026
+  &nbsp;|&nbsp; Pipeline PySUS + FTP DATASUS · GitHub Actions · Coleta mensal automática
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const KPI = {"municipios": 5569, "pop": 207208235, "caps": 3715, "srt": 335, "leitos_sus": 424350, "leitos_hg": 8400, "leitos_total": 6930, "uti": 3239, "psiq_cad": 2080, "def_psiq": 416, "alertas": 325, "cnes_real": 0, "esf_pct": 5.2, "mun_alto_risco": 967, "mun_medio_risco": 4336, "mun_baixo_risco": 266};
+const UFS = [{"uf": "AM", "municipios": 62, "pop": 4318905, "caps": 13, "srt": 0, "leitos": 5991, "leitos_hg": 16, "uti": 759, "psiq_cad": 540, "def_psiq": 108, "alertas": 8, "cnes_real": 0, "esf_pct": 65.0, "vacuo": 0.0, "score": 13.1, "risco": "ALTO"}, {"uf": "AC", "municipios": 22, "pop": 910871, "caps": 17, "srt": 3, "leitos": 754, "leitos_hg": 30, "uti": 155, "psiq_cad": 80, "def_psiq": 16, "alertas": 4, "cnes_real": 0, "esf_pct": 65.0, "vacuo": 0.0, "score": 16.4, "risco": "ALTO"}, {"uf": "PA", "municipios": 144, "pop": 8711196, "caps": 127, "srt": 8, "leitos": 9351, "leitos_hg": 243, "uti": 1550, "psiq_cad": 1000, "def_psiq": 200, "alertas": 28, "cnes_real": 0, "esf_pct": 65.0, "vacuo": 0.0, "score": 18.8, "risco": "ALTO"}, {"uf": "MA", "municipios": 217, "pop": 6727383, "caps": 139, "srt": 6, "leitos": 7206, "leitos_hg": 190, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 59, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 22.3, "risco": "ALTO"}, {"uf": "AP", "municipios": 16, "pop": 794618, "caps": 10, "srt": 1, "leitos": 798, "leitos_hg": 15, "uti": 139, "psiq_cad": 100, "def_psiq": 20, "alertas": 1, "cnes_real": 0, "esf_pct": 65.0, "vacuo": 0.0, "score": 25.6, "risco": "ALTO"}, {"uf": "RR", "municipios": 15, "pop": 738772, "caps": 12, "srt": 1, "leitos": 700, "leitos_hg": 20, "uti": 119, "psiq_cad": 80, "def_psiq": 16, "alertas": 4, "cnes_real": 0, "esf_pct": 65.0, "vacuo": 0.0, "score": 26.4, "risco": "ALTO"}, {"uf": "AL", "municipios": 102, "pop": 3256292, "caps": 84, "srt": 6, "leitos": 3973, "leitos_hg": 180, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 11, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 28.1, "risco": "ALTO"}, {"uf": "BA", "municipios": 417, "pop": 13918639, "caps": 311, "srt": 12, "leitos": 16475, "leitos_hg": 565, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 72, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 30.5, "risco": "MEDIO"}, {"uf": "RO", "municipios": 52, "pop": 1677739, "caps": 26, "srt": 2, "leitos": 1944, "leitos_hg": 22, "uti": 290, "psiq_cad": 160, "def_psiq": 32, "alertas": 8, "cnes_real": 0, "esf_pct": 63.8, "vacuo": 0.0, "score": 30.6, "risco": "MEDIO"}, {"uf": "SE", "municipios": 75, "pop": 2276468, "caps": 47, "srt": 2, "leitos": 2774, "leitos_hg": 100, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 12, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 31.1, "risco": "MEDIO"}, {"uf": "TO", "municipios": 139, "pop": 1586859, "caps": 42, "srt": 3, "leitos": 1082, "leitos_hg": 50, "uti": 227, "psiq_cad": 120, "def_psiq": 24, "alertas": 10, "cnes_real": 0, "esf_pct": 65.0, "vacuo": 0.0, "score": 31.6, "risco": "MEDIO"}, {"uf": "PI", "municipios": 224, "pop": 3266440, "caps": 72, "srt": 6, "leitos": 3504, "leitos_hg": 146, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 15, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 31.8, "risco": "MEDIO"}, {"uf": "PE", "municipios": 184, "pop": 9160396, "caps": 178, "srt": 12, "leitos": 11669, "leitos_hg": 470, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 30, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 34.6, "risco": "MEDIO"}, {"uf": "RN", "municipios": 167, "pop": 3621917, "caps": 83, "srt": 5, "leitos": 4017, "leitos_hg": 205, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 29, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 35.8, "risco": "MEDIO"}, {"uf": "RJ", "municipios": 92, "pop": 16822095, "caps": 170, "srt": 32, "leitos": 58173, "leitos_hg": 715, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 0, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 36.5, "risco": "MEDIO"}, {"uf": "PB", "municipios": 223, "pop": 4277923, "caps": 157, "srt": 7, "leitos": 4562, "leitos_hg": 240, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 14, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 38.0, "risco": "MEDIO"}, {"uf": "CE", "municipios": 184, "pop": 8965596, "caps": 186, "srt": 11, "leitos": 11419, "leitos_hg": 404, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 17, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 39.5, "risco": "MEDIO"}, {"uf": "SP", "municipios": 645, "pop": 44025364, "caps": 564, "srt": 81, "leitos": 130712, "leitos_hg": 1930, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 1, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 41.6, "risco": "MEDIO"}, {"uf": "MT", "municipios": 141, "pop": 3600022, "caps": 77, "srt": 5, "leitos": 5514, "leitos_hg": 100, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 0, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 42.3, "risco": "MEDIO"}, {"uf": "GO", "municipios": 246, "pop": 7195461, "caps": 129, "srt": 12, "leitos": 13805, "leitos_hg": 245, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 1, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 44.5, "risco": "MEDIO"}, {"uf": "MS", "municipios": 79, "pop": 2806798, "caps": 57, "srt": 4, "leitos": 5247, "leitos_hg": 100, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 0, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 45.3, "risco": "MEDIO"}, {"uf": "MG", "municipios": 853, "pop": 21183764, "caps": 511, "srt": 34, "leitos": 44474, "leitos_hg": 910, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 1, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 45.4, "risco": "MEDIO"}, {"uf": "RS", "municipios": 497, "pop": 11274695, "caps": 238, "srt": 24, "leitos": 21340, "leitos_hg": 515, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 0, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 45.8, "risco": "MEDIO"}, {"uf": "ES", "municipios": 78, "pop": 4077706, "caps": 60, "srt": 6, "leitos": 10047, "leitos_hg": 100, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 0, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 49.9, "risco": "MEDIO"}, {"uf": "PR", "municipios": 399, "pop": 11700721, "caps": 234, "srt": 20, "leitos": 24142, "leitos_hg": 440, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 0, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 50.7, "risco": "MEDIO"}, {"uf": "DF", "municipios": 1, "pop": 2996899, "caps": 18, "srt": 8, "leitos": 9680, "leitos_hg": 244, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 0, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 54.9, "risco": "MEDIO"}, {"uf": "SC", "municipios": 295, "pop": 7314696, "caps": 153, "srt": 24, "leitos": 14997, "leitos_hg": 205, "uti": 0, "psiq_cad": 0, "def_psiq": 0, "alertas": 0, "cnes_real": 0, "esf_pct": 0.0, "vacuo": 0.0, "score": 55.4, "risco": "BAIXO"}];
+const TOP20 = [{"uf": "AM", "m": "Manaus", "pop": 2303732, "caps": 13.0, "def_psiq": 82.0, "alerta_fiscal": false, "_sc_mun": 122.2, "esf_pct": 65.0, "uti_sus": 412.0}, {"uf": "PA", "m": "Bel\u00e9m", "pop": 1397315, "caps": 8.0, "def_psiq": 52.0, "alerta_fiscal": false, "_sc_mun": 69.9, "esf_pct": 65.0, "uti_sus": 260.0}, {"uf": "PA", "m": "Ananindeua", "pop": 509227, "caps": 3.0, "def_psiq": 18.0, "alerta_fiscal": false, "_sc_mun": 6.0, "esf_pct": 65.0, "uti_sus": 95.0}, {"uf": "AC", "m": "Rio Branco", "pop": 419452, "caps": 5.0, "def_psiq": 14.0, "alerta_fiscal": false, "_sc_mun": 0.0, "esf_pct": 65.0, "uti_sus": 72.0}, {"uf": "PA", "m": "Santar\u00e9m", "pop": 360871, "caps": 3.0, "def_psiq": 12.0, "alerta_fiscal": true, "_sc_mun": -3.2, "esf_pct": 65.0, "uti_sus": 66.0}, {"uf": "AM", "m": "Manacapuru", "pop": 111751, "caps": 0.0, "def_psiq": 4.0, "alerta_fiscal": false, "_sc_mun": -4.0, "esf_pct": 65.0, "uti_sus": 20.0}, {"uf": "AM", "m": "Novo Air\u00e3o", "pop": 16562, "caps": 0.0, "def_psiq": 0.0, "alerta_fiscal": false, "_sc_mun": -5.5, "esf_pct": 65.0, "uti_sus": 3.0}, {"uf": "AM", "m": "Manicor\u00e9", "pop": 58018, "caps": 0.0, "def_psiq": 2.0, "alerta_fiscal": false, "_sc_mun": -5.6, "esf_pct": 65.0, "uti_sus": 10.0}, {"uf": "AM", "m": "Itacoatiara", "pop": 113917, "caps": 0.0, "def_psiq": 4.0, "alerta_fiscal": true, "_sc_mun": -5.7, "esf_pct": 65.0, "uti_sus": 20.0}, {"uf": "AM", "m": "Envira", "pop": 17985, "caps": 0.0, "def_psiq": 0.0, "alerta_fiscal": false, "_sc_mun": -6.3, "esf_pct": 65.0, "uti_sus": 3.0}, {"uf": "AM", "m": "Beruri", "pop": 22495, "caps": 0.0, "def_psiq": 0.0, "alerta_fiscal": false, "_sc_mun": -6.6, "esf_pct": 65.0, "uti_sus": 4.0}, {"uf": "AM", "m": "Juta\u00ed", "pop": 28202, "caps": 0.0, "def_psiq": 0.0, "alerta_fiscal": false, "_sc_mun": -7.2, "esf_pct": 65.0, "uti_sus": 5.0}, {"uf": "AM", "m": "Amatur\u00e1", "pop": 11533, "caps": 0.0, "def_psiq": 0.0, "alerta_fiscal": false, "_sc_mun": -7.3, "esf_pct": 65.0, "uti_sus": 2.0}, {"uf": "AM", "m": "Caapiranga", "pop": 14806, "caps": 0.0, "def_psiq": 0.0, "alerta_fiscal": false, "_sc_mun": -7.3, "esf_pct": 65.0, "uti_sus": 2.0}, {"uf": "AM", "m": "Fonte Boa", "pop": 28227, "caps": 0.0, "def_psiq": 0.0, "alerta_fiscal": false, "_sc_mun": -7.3, "esf_pct": 65.0, "uti_sus": 5.0}, {"uf": "PA", "m": "Marab\u00e1", "pop": 290975, "caps": 3.0, "def_psiq": 10.0, "alerta_fiscal": false, "_sc_mun": -7.9, "esf_pct": 65.0, "uti_sus": 53.0}, {"uf": "AM", "m": "Anam\u00e3", "pop": 9981, "caps": 0.0, "def_psiq": 0.0, "alerta_fiscal": false, "_sc_mun": -8.2, "esf_pct": 65.0, "uti_sus": 1.0}, {"uf": "AM", "m": "Mau\u00e9s", "pop": 66336, "caps": 0.0, "def_psiq": 2.0, "alerta_fiscal": false, "_sc_mun": -8.2, "esf_pct": 65.0, "uti_sus": 12.0}, {"uf": "AM", "m": "Urucar\u00e1", "pop": 19617, "caps": 0.0, "def_psiq": 0.0, "alerta_fiscal": false, "_sc_mun": -8.3, "esf_pct": 65.0, "uti_sus": 3.0}, {"uf": "PA", "m": "Parauapebas", "pop": 305771, "caps": 2.0, "def_psiq": 10.0, "alerta_fiscal": false, "_sc_mun": -8.3, "esf_pct": 65.0, "uti_sus": 53.0}];
+const TOPDEF = [{"uf": "AM", "m": "Manaus", "pop": 2303732, "psiq_cad": 410.0, "def_psiq": 82.0, "lq": 0.1589}, {"uf": "PA", "m": "Bel\u00e9m", "pop": 1397315, "psiq_cad": 260.0, "def_psiq": 52.0, "lq": 0.1596}, {"uf": "PA", "m": "Ananindeua", "pop": 509227, "psiq_cad": 90.0, "def_psiq": 18.0, "lq": 0.1504}, {"uf": "RO", "m": "Porto Velho", "pop": 517709, "psiq_cad": 90.0, "def_psiq": 18.0, "lq": 0.1564}, {"uf": "AP", "m": "Macap\u00e1", "pop": 489676, "psiq_cad": 80.0, "def_psiq": 16.0, "lq": 0.1445}, {"uf": "RR", "m": "Boa Vista", "pop": 485477, "psiq_cad": 80.0, "def_psiq": 16.0, "lq": 0.1548}, {"uf": "AC", "m": "Rio Branco", "pop": 419452, "psiq_cad": 70.0, "def_psiq": 14.0, "lq": 0.1535}, {"uf": "PA", "m": "Santar\u00e9m", "pop": 360871, "psiq_cad": 60.0, "def_psiq": 12.0, "lq": 0.1446}, {"uf": "TO", "m": "Palmas", "pop": 328499, "psiq_cad": 60.0, "def_psiq": 12.0, "lq": 0.1586}, {"uf": "PA", "m": "Marab\u00e1", "pop": 290975, "psiq_cad": 50.0, "def_psiq": 10.0, "lq": 0.1501}, {"uf": "PA", "m": "Parauapebas", "pop": 305771, "psiq_cad": 50.0, "def_psiq": 10.0, "lq": 0.1493}, {"uf": "PA", "m": "Abaetetuba", "pop": 172344, "psiq_cad": 30.0, "def_psiq": 6.0, "lq": 0.1517}, {"uf": "PA", "m": "Castanhal", "pop": 209126, "psiq_cad": 30.0, "def_psiq": 6.0, "lq": 0.1248}, {"uf": "TO", "m": "Aragua\u00edna", "pop": 183024, "psiq_cad": 30.0, "def_psiq": 6.0, "lq": 0.1401}, {"uf": "AM", "m": "Itacoatiara", "pop": 113917, "psiq_cad": 20.0, "def_psiq": 4.0, "lq": 0.1544}, {"uf": "AM", "m": "Manacapuru", "pop": 111751, "psiq_cad": 20.0, "def_psiq": 4.0, "lq": 0.157}, {"uf": "AP", "m": "Santana", "pop": 118803, "psiq_cad": 20.0, "def_psiq": 4.0, "lq": 0.1487}, {"uf": "PA", "m": "Altamira", "pop": 138749, "psiq_cad": 20.0, "def_psiq": 4.0, "lq": 0.1267}, {"uf": "PA", "m": "Barcarena", "pop": 139076, "psiq_cad": 20.0, "def_psiq": 4.0, "lq": 0.1263}, {"uf": "PA", "m": "Bragan\u00e7a", "pop": 132489, "psiq_cad": 20.0, "def_psiq": 4.0, "lq": 0.13}, {"uf": "PA", "m": "Breves", "pop": 116058, "psiq_cad": 20.0, "def_psiq": 4.0, "lq": 0.1496}, {"uf": "PA", "m": "Camet\u00e1", "pop": 144859, "psiq_cad": 20.0, "def_psiq": 4.0, "lq": 0.1192}, {"uf": "PA", "m": "Itaituba", "pop": 135369, "psiq_cad": 20.0, "def_psiq": 4.0, "lq": 0.1298}, {"uf": "PA", "m": "Marituba", "pop": 119437, "psiq_cad": 20.0, "def_psiq": 4.0, "lq": 0.1431}, {"uf": "PA", "m": "Paragominas", "pop": 113498, "psiq_cad": 20.0, "def_psiq": 4.0, "lq": 0.1516}];
+
+// Paleta de cores por score
+function scoreBg(s){
+  if(s<30) return '#dc2626';
+  if(s<55) return '#d97706';
+  return '#16a34a';
+}
+
+// ── CHART: Score por UF ──────────────────────────────────────────────
+const ufsOrdenadas = [...UFS].sort((a,b)=>a.score-b.score);
+new Chart(document.getElementById('cScore'),{
+  type:'bar',
+  data:{
+    labels:ufsOrdenadas.map(u=>u.uf),
+    datasets:[{
+      label:'Score Médio',
+      data:ufsOrdenadas.map(u=>u.score),
+      backgroundColor:ufsOrdenadas.map(u=>scoreBg(u.score)),
+      borderRadius:4
+    }]
+  },
+  options:{
+    plugins:{legend:{display:false},tooltip:{callbacks:{
+      afterLabel:ctx=>{
+        const u=ufsOrdenadas[ctx.dataIndex];
+        return `Mun: ${u.municipios} | CAPS: ${u.caps} | Def: ${u.def_psiq}`;
+      }
+    }}},
+    scales:{y:{min:0,max:100,title:{display:true,text:'Score (0–100)'}}}
+  }
+});
+
+// ── CHART: Distribuição risco ────────────────────────────────────────
+new Chart(document.getElementById('cRisco'),{
+  type:'doughnut',
+  data:{
+    labels:['Risco Alto','Risco Médio','Risco Baixo'],
+    datasets:[{
+      data:[KPI.mun_alto_risco,KPI.mun_medio_risco,KPI.mun_baixo_risco],
+      backgroundColor:['#dc2626','#d97706','#16a34a']
+    }]
+  },
+  options:{plugins:{legend:{position:'bottom'}}}
+});
+
+// ── CHART: CAPS por Região ───────────────────────────────────────────
+const regioes = {
+  'Norte':['AC','AM','AP','PA','RO','RR','TO'],
+  'Nordeste':['AL','BA','CE','MA','PB','PE','PI','RN','SE'],
+  'Centro-Oeste':['DF','GO','MS','MT'],
+  'Sudeste':['ES','MG','RJ','SP'],
+  'Sul':['PR','RS','SC']
+};
+const capsRegiao = Object.entries(regioes).map(([reg,ufs_])=>{
+  const total = UFS.filter(u=>ufs_.includes(u.uf)).reduce((s,u)=>s+u.caps,0);
+  return {reg,total};
+});
+new Chart(document.getElementById('cCaps'),{
+  type:'bar',
+  data:{
+    labels:capsRegiao.map(r=>r.reg),
+    datasets:[{label:'CAPS',data:capsRegiao.map(r=>r.total),backgroundColor:['#1d4ed8','#7c3aed','#d97706','#16a34a','#dc2626'],borderRadius:4}]
+  },
+  options:{plugins:{legend:{display:false}}}
+});
+
+// ── CHART: CAPS por UF ───────────────────────────────────────────────
+const ufsCapsSorted=[...UFS].sort((a,b)=>b.caps-a.caps);
+new Chart(document.getElementById('cCapsUF'),{
+  type:'bar',
+  data:{
+    labels:ufsCapsSorted.map(u=>u.uf),
+    datasets:[{label:'CAPS',data:ufsCapsSorted.map(u=>u.caps),backgroundColor:'#1d4ed8',borderRadius:4}]
+  },
+  options:{plugins:{legend:{display:false}}}
+});
+
+// ── CHART: Psiquiatras vs Déficit ────────────────────────────────────
+const ufsPsiq=[...UFS].sort((a,b)=>b.def_psiq-a.def_psiq).slice(0,15);
+new Chart(document.getElementById('cPsiq'),{
+  type:'bar',
+  data:{
+    labels:ufsPsiq.map(u=>u.uf),
+    datasets:[
+      {label:'Psiq. Cad.',data:ufsPsiq.map(u=>u.psiq_cad),backgroundColor:'#1d4ed8',borderRadius:4},
+      {label:'Déficit',data:ufsPsiq.map(u=>u.def_psiq),backgroundColor:'#dc2626',borderRadius:4}
+    ]
+  },
+  options:{plugins:{legend:{position:'top'}}}
+});
+
+// ── CHART: Alertas fiscais ───────────────────────────────────────────
+const ufsAlerta=[...UFS].sort((a,b)=>b.alertas-a.alertas);
+new Chart(document.getElementById('cAlerta'),{
+  type:'bar',
+  data:{
+    labels:ufsAlerta.map(u=>u.uf),
+    datasets:[{label:'Alertas',data:ufsAlerta.map(u=>u.alertas),backgroundColor:'#dc2626',borderRadius:4}]
+  },
+  options:{plugins:{legend:{display:false}}}
+});
+
+// ── CHART: Risco score ───────────────────────────────────────────────
+new Chart(document.getElementById('cRiscoBar'),{
+  type:'bar',
+  data:{
+    labels:ufsOrdenadas.map(u=>u.uf),
+    datasets:[{
+      label:'Score',
+      data:ufsOrdenadas.map(u=>u.score),
+      backgroundColor:ufsOrdenadas.map(u=>scoreBg(u.score)),
+      borderRadius:4
+    }]
+  },
+  options:{plugins:{legend:{display:false}}}
+});
+
+// ── CHART: UTI ───────────────────────────────────────────────────────
+const ufsUTI=[...UFS].sort((a,b)=>b.uti-a.uti);
+new Chart(document.getElementById('cUTI'),{
+  type:'bar',
+  data:{
+    labels:ufsUTI.map(u=>u.uf),
+    datasets:[{label:'Leitos UTI',data:ufsUTI.map(u=>u.uti),backgroundColor:'#7c3aed',borderRadius:4}]
+  },
+  options:{plugins:{legend:{display:false}}}
+});
+
+// ── CHART: Leitos comparativo ────────────────────────────────────────
+const ufsLeit=[...UFS].sort((a,b)=>b.leitos-a.leitos).slice(0,15);
+new Chart(document.getElementById('cLeitos'),{
+  type:'bar',
+  data:{
+    labels:ufsLeit.map(u=>u.uf),
+    datasets:[
+      {label:'Leitos SUS',data:ufsLeit.map(u=>u.leitos),backgroundColor:'#1d4ed8',borderRadius:4},
+      {label:'UTI',data:ufsLeit.map(u=>u.uti),backgroundColor:'#7c3aed',borderRadius:4},
+      {label:'HG',data:ufsLeit.map(u=>u.leitos_hg),backgroundColor:'#16a34a',borderRadius:4}
+    ]
+  },
+  options:{plugins:{legend:{position:'top'}}}
+});
+
+// ── CHART: CNES por UF ───────────────────────────────────────────────
+const ufsCNES=[...UFS].sort((a,b)=>b.cnes_real-a.cnes_real);
+new Chart(document.getElementById('cCNES'),{
+  type:'bar',
+  data:{
+    labels:ufsCNES.map(u=>u.uf),
+    datasets:[{
+      label:'Mun. CNES Real',
+      data:ufsCNES.map(u=>u.cnes_real),
+      backgroundColor:'#16a34a',
+      borderRadius:4
+    }]
+  },
+  options:{plugins:{legend:{display:false}}}
+});
+
+// ── Tabela UF ─────────────────────────────────────────────────────────
+const tb=document.getElementById('tbUF');
+UFS.forEach(u=>{
+  const sc=u.score;
+  const badge=sc>=55?'success':sc>=30?'warning':'danger';
+  const cnesBadge=u.cnes_real>0?`<span class="badge bg-success">${u.cnes_real}</span>`:'-';
+  tb.innerHTML+=`<tr>
+    <td><b>${u.uf}</b></td>
+    <td>${u.municipios}</td>
+    <td>${(u.pop/1e6).toFixed(2)}M</td>
+    <td>${u.caps}</td>
+    <td>${u.srt}</td>
+    <td>${(u.leitos||0).toLocaleString('pt-BR')}</td>
+    <td>${u.uti||0}</td>
+    <td>${u.psiq_cad||0}</td>
+    <td>${u.def_psiq>0?'<span class="text-danger fw-bold">'+u.def_psiq+'</span>':'-'}</td>
+    <td>${u.alertas>0?'<span class="badge bg-danger">'+u.alertas+'</span>':'-'}</td>
+    <td>${u.esf_pct>0?u.esf_pct+'%':'-'}</td>
+    <td><span class="badge bg-${badge}">${sc}</span></td>
+    <td><span class="badge-risco-${u.risco}">${u.risco}</span></td>
+    <td>${cnesBadge}</td>
+  </tr>`;
+});
+
+// ── Tabela UTI ────────────────────────────────────────────────────────
+const tbUTI=document.getElementById('tbUTI');
+[...UFS].sort((a,b)=>b.leitos-a.leitos).forEach(u=>{
+  const lk=(u.pop>0?(u.leitos/u.pop*1000):0).toFixed(2);
+  const uk=(u.pop>0?(u.uti/u.pop*1000):0).toFixed(2);
+  const pk=(u.pop>0?(u.psiq_cad/u.pop*100000):0).toFixed(1);
+  tbUTI.innerHTML+=`<tr>
+    <td><b>${u.uf}</b></td>
+    <td>${(u.pop/1e6).toFixed(2)}M</td>
+    <td>${(u.leitos||0).toLocaleString('pt-BR')}</td>
+    <td>${lk}</td>
+    <td>${u.uti||0}</td>
+    <td>${uk}</td>
+    <td>${u.leitos_hg||0}</td>
+    <td>${u.psiq_cad||0}</td>
+    <td>${pk}</td>
+  </tr>`;
+});
+
+// ── Top 20 críticos ───────────────────────────────────────────────────
+const tb20=document.getElementById('tbTop20');
+TOP20.forEach((r,i)=>{
+  tb20.innerHTML+=`<tr>
+    <td>${i+1}</td>
+    <td>${r.uf||'?'}</td>
+    <td>${r.m||'?'}</td>
+    <td>${(parseInt(r.pop||0)).toLocaleString('pt-BR')}</td>
+    <td>${r.caps||0}</td>
+    <td>${r.def_psiq||0}</td>
+    <td>${r.esf_pct>0?r.esf_pct+'%':'-'}</td>
+    <td>${r.uti_sus||0}</td>
+    <td><span class="badge bg-danger">${parseFloat(r._sc_mun||0).toFixed(1)}</span></td>
+  </tr>`;
+});
+
+// ── Top déficit psiquiátrico ──────────────────────────────────────────
+const tbD=document.getElementById('tbDef');
+TOPDEF.forEach((r,i)=>{
+  tbD.innerHTML+=`<tr>
+    <td>${i+1}</td>
+    <td>${r.uf||'?'}</td>
+    <td>${r.m||'?'}</td>
+    <td>${(parseInt(r.pop||0)).toLocaleString('pt-BR')}</td>
+    <td>${r.psiq_cad||0}</td>
+    <td><span class="badge bg-danger">${r.def_psiq||0}</span></td>
+    <td>${parseFloat(r.lq||0).toFixed(4)}</td>
+  </tr>`;
+});
+
+// ── Risco counters ────────────────────────────────────────────────────
+document.getElementById('kAlto').textContent=KPI.mun_alto_risco.toLocaleString('pt-BR');
+document.getElementById('kMedio').textContent=KPI.mun_medio_risco.toLocaleString('pt-BR');
+document.getElementById('kBaixo').textContent=KPI.mun_baixo_risco.toLocaleString('pt-BR');
+document.getElementById('pAlto').style.width=(KPI.mun_alto_risco/KPI.municipios*100).toFixed(1)+'%';
+document.getElementById('pMedio').style.width=(KPI.mun_medio_risco/KPI.municipios*100).toFixed(1)+'%';
+document.getElementById('pBaixo').style.width=(KPI.mun_baixo_risco/KPI.municipios*100).toFixed(1)+'%';
+
+// ── CNES coverage numbers ─────────────────────────────────────────────
+document.getElementById('k1').textContent=KPI.cnes_real;
+document.getElementById('k1p').textContent=(KPI.cnes_real/KPI.municipios*100).toFixed(1)+'%';
+document.getElementById('k2').textContent=(KPI.municipios-KPI.cnes_real-449);
+document.getElementById('k2p').textContent=((KPI.municipios-KPI.cnes_real-449)/KPI.municipios*100).toFixed(1)+'%';
+</script>
+</body>
+</html>
