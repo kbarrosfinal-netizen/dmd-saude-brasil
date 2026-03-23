@@ -1,0 +1,482 @@
+name: "DMD Bundle Integrity Validation"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# EMET Gestão Brasil | Agente IA Vivo DMD v4.0
+# Executa teste de integridade completo da Base Canônica DMD v2.2 a cada commit
+# que toque arquivos dentro de releases/dmd-canonica-v2-2/ ou o próprio workflow.
+# ──────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches: ["main", "release/**"]
+    paths:
+      - "releases/dmd-canonica-v2-2/**"
+      - ".github/workflows/validate-bundle-dmd.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "releases/dmd-canonica-v2-2/**"
+      - ".github/workflows/validate-bundle-dmd.yml"
+  workflow_dispatch:
+    inputs:
+      release_dir:
+        description: "Pasta da release a validar (relativa à raiz)"
+        required: false
+        default: "releases/dmd-canonica-v2-2"
+      fail_on_warning:
+        description: "Tratar avisos como falha?"
+        required: false
+        default: "false"
+        type: choice
+        options: ["true", "false"]
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+concurrency:
+  group: "dmd-bundle-validate-${{ github.ref }}"
+  cancel-in-progress: true
+
+env:
+  RELEASE_DIR: ${{ github.event.inputs.release_dir || 'releases/dmd-canonica-v2-2' }}
+  FAIL_ON_WARNING: ${{ github.event.inputs.fail_on_warning || 'false' }}
+  # ── Valores canônicos esperados da v2.2 ──────────────────────────────────
+  EXPECTED_MUNICIPIOS_TOTAL:      "5570"
+  EXPECTED_MAT_ESTRITO:           "5530"
+  EXPECTED_VALIDADOS_GERENCIAL:   "5541"
+  EXPECTED_SEM_CORRESPONDENCIA:   "40"
+  EXPECTED_ALIASES_TOTAL:         "12"
+  EXPECTED_ALIASES_NOVOS:         "7"
+  EXPECTED_ALIASES_CONFIRMADOS:   "5"
+  EXPECTED_HOMOLOGACOES_MANUAIS:  "1"
+  EXPECTED_PENDENCIAS:            "28"
+  EXPECTED_STATUS_ALTA_CONF:      "5529"
+  EXPECTED_COLUNAS_MUNICIPAL:     "121"
+  EXPECTED_UFS:                   "27"
+
+jobs:
+  # ============================================================
+  # JOB 1 — VERIFICAÇÃO DE ARQUIVOS OBRIGATÓRIOS
+  # ============================================================
+  check-files:
+    name: "B1 · Arquivos Obrigatórios"
+    runs-on: ubuntu-latest
+    outputs:
+      files_ok: ${{ steps.check.outputs.result }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verificar existência e tamanho dos 9 arquivos
+        id: check
+        shell: python3 {0}
+        run: |
+          import os, sys, json
+
+          BASE = os.environ["RELEASE_DIR"]
+          FILES = {
+              "dmd_resumo_v2_2.json":                        (500,     5_000),
+              "dmd_aliases_materializados_12_v2_2.csv":      (1_000,  15_000),
+              "dmd_base_municipal_canonica_v2_2.csv":        (3_000_000, 8_000_000),
+              "dmd_base_uf_canonica_v2_2.csv":               (400,    5_000),
+              "dmd_base_canonica_integrada_v2_2.xlsx":       (2_000_000, 6_000_000),
+              "dmd_pendencias_remanescentes_28_v2_2.csv":    (2_000,  30_000),
+              "dmd_proposta_decisao_manual_29_casos_v2_2.csv":(2_000, 30_000),
+              "dmd_validacao_41_pendencias_v2_2.csv":        (4_000,  40_000),
+              "README.md":                                   (2_000,  30_000),
+          }
+
+          failures = []
+          for fname, (mn, mx) in FILES.items():
+              fp = os.path.join(BASE, fname)
+              if not os.path.isfile(fp):
+                  failures.append(f"AUSENTE: {fname}")
+                  print(f"::error file={fp}::Arquivo obrigatório não encontrado: {fname}")
+              else:
+                  sz = os.path.getsize(fp)
+                  if not (mn <= sz <= mx):
+                      failures.append(f"TAMANHO_INVÁLIDO: {fname} ({sz} bytes, esperado {mn}–{mx})")
+                      print(f"::error file={fp}::Tamanho fora do intervalo: {sz} bytes (esperado {mn}–{mx})")
+                  else:
+                      print(f"  PASS {fname}  ({sz:,} bytes)")
+
+          if failures:
+              print(f"\n::error::B1 FALHOU — {len(failures)} problema(s):")
+              for f in failures: print(f"  • {f}")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+                  fh.write("result=fail\n")
+              sys.exit(1)
+
+          print(f"\n  B1 PASS — 9/9 arquivos presentes e dentro do tamanho esperado.")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write("result=pass\n")
+
+  # ============================================================
+  # JOB 2 — METADADOS JSON
+  # ============================================================
+  check-metadata:
+    name: "B2 · Metadados JSON"
+    runs-on: ubuntu-latest
+    needs: check-files
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validar dmd_resumo_v2_2.json
+        shell: python3 {0}
+        run: |
+          import json, os, sys
+
+          BASE = os.environ["RELEASE_DIR"]
+          with open(os.path.join(BASE, "dmd_resumo_v2_2.json")) as f:
+              R = json.load(f)
+
+          def env(k): return int(os.environ[k])
+
+          checks = [
+              ("municipios_oficiais_total",                                 env("EXPECTED_MUNICIPIOS_TOTAL")),
+              ("municipios_com_correspondencia_materializada_estrita_v2_2", env("EXPECTED_MAT_ESTRITO")),
+              ("municipios_validados_criterio_gerencial_v2_2",              env("EXPECTED_VALIDADOS_GERENCIAL")),
+              ("municipios_sem_correspondencia_segura_v2_2",                env("EXPECTED_SEM_CORRESPONDENCIA")),
+              ("aliases_validados_materializados_v2_2_total",               env("EXPECTED_ALIASES_TOTAL")),
+              ("aliases_novamente_materializados_na_v2_2",                  env("EXPECTED_ALIASES_NOVOS")),
+              ("aliases_ja_materializados_confirmados_na_v2_2",             env("EXPECTED_ALIASES_CONFIRMADOS")),
+              ("homologacoes_manuais_materializadas",                       env("EXPECTED_HOMOLOGACOES_MANUAIS")),
+              ("pendencias_remanescentes_validacao_manual",                 env("EXPECTED_PENDENCIAS")),
+          ]
+
+          sc = R.get("status_counts", {})
+          checks += [
+              ("status_counts.mapeado_alta_confianca_fase2",
+               env("EXPECTED_STATUS_ALTA_CONF")),
+          ]
+
+          failures = []
+          for key, expected in checks:
+              val = sc.get(key.split(".")[-1]) if key.startswith("status_counts.") else R.get(key)
+              if val != expected:
+                  failures.append(f"{key}: esperado={expected}, obtido={val}")
+                  print(f"::error::{key} — esperado {expected}, obtido {val}")
+              else:
+                  print(f"  PASS  {key} = {expected}")
+
+          if failures:
+              print(f"\n::error::B2 FALHOU — {len(failures)} divergência(s) nos metadados")
+              sys.exit(1)
+          print("\n  B2 PASS — 10/10 campos de metadados corretos.")
+
+  # ============================================================
+  # JOB 3 — 12 ALIASES (nomenclatura, IBGE, flags)
+  # ============================================================
+  check-aliases:
+    name: "B3 · 12 Aliases Materializados"
+    runs-on: ubuntu-latest
+    needs: check-files
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validar aliases (nomenclatura, IBGE, flags)
+        shell: python3 {0}
+        run: |
+          import csv, os, sys
+
+          BASE  = os.environ["RELEASE_DIR"]
+          FPATH = os.path.join(BASE, "dmd_aliases_materializados_12_v2_2.csv")
+
+          ESPERADOS = [
+              ("BA", "Heliolândia",                   "Heliópolis",             "2911857.0"),
+              ("BA", "Ibicoa",                        "Ibicoara",               "2912202.0"),
+              ("MA", "Governador Edson Lobão",        "Governador Edison Lobão","2104552.0"),
+              ("MG", "Barão de Monte Alto",           "Barão do Monte Alto",    "3105509.0"),
+              ("MG", "Brasópolis",                    "Brazópolis",             "3108909.0"),
+              ("MG", "Cachoeira Dourada de Minas",    "Cachoeira Dourada",      "3109808.0"),
+              ("PI", "Belo do Piauí",                 "Belém do Piauí",         "2201572.0"),
+              ("PI", "Dom Expedito Lins",             "Dom Expedito Lopes",     "2203404.0"),
+              ("PR", "Vila Alta",                     "Alto Paraíso",           "4128625.0"),
+              ("RN", "Augusto Severo",                "Campo Grande",           "2401305.0"),
+              ("RN", "Caicaú",                        "Caicó",                  "2402006.0"),
+              ("RS", "Cruzeiro do Nordeste",          "Cruzeiro do Sul",        "4306205.0"),
+          ]
+
+          with open(FPATH, encoding="utf-8") as f:
+              rows = list(csv.DictReader(f))
+
+          failures = []
+          expected_n = int(os.environ["EXPECTED_ALIASES_TOTAL"])
+
+          if len(rows) != expected_n:
+              failures.append(f"Contagem: esperado {expected_n}, obtido {len(rows)}")
+              print(f"::error file={FPATH}::Número de aliases incorreto: esperado {expected_n}, obtido {len(rows)}")
+
+          for i, (uf, orig, dest, ibge) in enumerate(ESPERADOS):
+              if i >= len(rows):
+                  failures.append(f"Alias {i+1} ausente")
+                  continue
+              r = rows[i]
+              ok = (
+                  r.get("uf","").strip()                          == uf   and
+                  r.get("nome_original","").strip()               == orig  and
+                  r.get("municipio_destino_validado","").strip()  == dest  and
+                  r.get("ibge_destino_validado","").strip()       == ibge  and
+                  r.get("materializado_v2_2","").strip().lower()  == "true" and
+                  r.get("status_linha_destino_antes","").strip()  == "mapeado_alta_confianca_fase2"
+              )
+              if not ok:
+                  msg = (f"A{i+1:02d}: uf={r.get('uf')} orig='{r.get('nome_original','')[:25]}' "
+                         f"dest='{r.get('municipio_destino_validado','')[:25]}' "
+                         f"ibge={r.get('ibge_destino_validado','')} "
+                         f"mat={r.get('materializado_v2_2')}")
+                  failures.append(msg)
+                  print(f"::error file={FPATH}::Alias {i+1} divergente: {msg}")
+              else:
+                  print(f"  PASS  A{i+1:02d}: {uf} | '{orig}' → '{dest}' [{ibge}]")
+
+          if failures:
+              print(f"\n::error::B3 FALHOU — {len(failures)} problema(s) nos aliases")
+              sys.exit(1)
+          print(f"\n  B3 PASS — 12/12 aliases corretos.")
+
+  # ============================================================
+  # JOB 4 — NOMENCLATURAS DA BASE MUNICIPAL (121 colunas)
+  # ============================================================
+  check-nomenclature:
+    name: "B4 · Nomenclaturas Base Municipal"
+    runs-on: ubuntu-latest
+    needs: check-files
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validar colunas obrigatórias e contagem de linhas
+        shell: python3 {0}
+        run: |
+          import csv, os, sys
+
+          BASE  = os.environ["RELEASE_DIR"]
+          FPATH = os.path.join(BASE, "dmd_base_municipal_canonica_v2_2.csv")
+
+          COLUNAS_OBRIG = [
+              "uf","municipio","ibge_cod","municipio_oficial","ibge_oficial",
+              "status_canonico_v2","regiao","mac","macrorregiao","porte",
+              "pop","leitos_sus","leitos_uti","uti_1k","esf_pct","caps",
+              "glosa_pct","fila_sisreg","receita_percap","vacinacao_pct",
+              "dengue_100k","idh","score_v3","risco_v3",
+              "agua_rede_geo","gini_geo","pib_percapita_geo",
+              "score_v2_ab","score_v2_fin","score_v2_iv",
+              "score_v2_raps","score_v2_san","score_v2_se",
+              "siops_desp","uti_fonte","alerta",
+              "homologacao_manual_v2_1","homologacao_manual_origem",
+              "homologacao_manual_justificativa","homologacao_manual_data",
+              "fonte_decisao_manual_v2_1",
+          ]
+
+          failures = []
+
+          # Ler apenas cabeçalho + contar linhas eficientemente
+          with open(FPATH, encoding="utf-8") as f:
+              reader = csv.DictReader(f)
+              header = reader.fieldnames or []
+              n_rows = sum(1 for _ in reader)
+
+          # Verificar total de colunas
+          expected_cols = int(os.environ["EXPECTED_COLUNAS_MUNICIPAL"])
+          if len(header) != expected_cols:
+              failures.append(f"Total de colunas: esperado {expected_cols}, obtido {len(header)}")
+              print(f"::warning::Total de colunas: {len(header)} (esperado {expected_cols})")
+          else:
+              print(f"  PASS  Total de colunas = {expected_cols}")
+
+          # Verificar colunas obrigatórias
+          for col in COLUNAS_OBRIG:
+              if col not in header:
+                  failures.append(f"Coluna ausente: '{col}'")
+                  print(f"::error file={FPATH}::Coluna obrigatória ausente: '{col}'")
+              else:
+                  print(f"  PASS  '{col}'")
+
+          # Verificar total de linhas
+          expected_mun = int(os.environ["EXPECTED_MUNICIPIOS_TOTAL"])
+          if n_rows != expected_mun:
+              failures.append(f"Total de municípios: esperado {expected_mun}, obtido {n_rows}")
+              print(f"::error file={FPATH}::Total de linhas incorreto: {n_rows} (esperado {expected_mun})")
+          else:
+              print(f"  PASS  Total de municípios = {expected_mun}")
+
+          if failures:
+              print(f"\n::error::B4 FALHOU — {len(failures)} problema(s) na nomenclatura")
+              sys.exit(1)
+          print(f"\n  B4 PASS — 121 colunas e 5570 municípios confirmados.")
+
+  # ============================================================
+  # JOB 5 — CONSISTÊNCIA NUMÉRICA UF
+  # ============================================================
+  check-uf-consistency:
+    name: "B5 · Consistência UF"
+    runs-on: ubuntu-latest
+    needs: check-files
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validar somas por UF
+        shell: python3 {0}
+        run: |
+          import csv, os, sys
+
+          BASE  = os.environ["RELEASE_DIR"]
+          FPATH = os.path.join(BASE, "dmd_base_uf_canonica_v2_2.csv")
+
+          with open(FPATH, encoding="utf-8") as f:
+              uf_rows = list(csv.DictReader(f))
+
+          def env(k): return int(os.environ[k])
+
+          failures = []
+
+          def check_sum(col, expected, label):
+              total = sum(int(r.get(col, 0)) for r in uf_rows)
+              if total != expected:
+                  failures.append(f"{label}: esperado {expected}, obtido {total}")
+                  print(f"::error file={FPATH}::{label} incorreto: {total} (esperado {expected})")
+              else:
+                  print(f"  PASS  {label} = {expected}")
+
+          n_ufs = len(uf_rows)
+          expected_ufs = env("EXPECTED_UFS")
+          if n_ufs != expected_ufs:
+              failures.append(f"Total UFs: esperado {expected_ufs}, obtido {n_ufs}")
+              print(f"::error::Total de UFs incorreto: {n_ufs} (esperado {expected_ufs})")
+          else:
+              print(f"  PASS  Total UFs = {expected_ufs}")
+
+          check_sum("municipios_oficiais",                       env("EXPECTED_MUNICIPIOS_TOTAL"),    "Soma municípios")
+          check_sum("correspondencia_materializada_estrita",     env("EXPECTED_MAT_ESTRITO"),         "Soma materializados")
+          check_sum("sem_correspondencia_segura",                env("EXPECTED_SEM_CORRESPONDENCIA"), "Soma sem correspondência")
+          check_sum("aliases_materializados_v2_2",               env("EXPECTED_ALIASES_TOTAL"),       "Soma aliases total")
+          check_sum("aliases_novos_materializados_v2_2",         env("EXPECTED_ALIASES_NOVOS"),       "Soma aliases novos")
+          check_sum("aliases_ja_materializados_confirmados_v2_2",env("EXPECTED_ALIASES_CONFIRMADOS"), "Soma aliases confirmados")
+
+          if failures:
+              print(f"\n::error::B5 FALHOU — {len(failures)} inconsistência(s) por UF")
+              sys.exit(1)
+          print(f"\n  B5 PASS — 7/7 somas por UF corretas.")
+
+  # ============================================================
+  # JOB 6 — CONSISTÊNCIA CRUZADA: IBGE dos aliases ∈ base municipal
+  # ============================================================
+  check-cross-consistency:
+    name: "B6 · Cruzamento Aliases × Base Municipal"
+    runs-on: ubuntu-latest
+    needs: check-files
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verificar que cada IBGE de alias existe na base municipal
+        shell: python3 {0}
+        run: |
+          import csv, os, sys
+
+          BASE       = os.environ["RELEASE_DIR"]
+          MUN_PATH   = os.path.join(BASE, "dmd_base_municipal_canonica_v2_2.csv")
+          ALIAS_PATH = os.path.join(BASE, "dmd_aliases_materializados_12_v2_2.csv")
+
+          with open(MUN_PATH, encoding="utf-8") as f:
+              ibge_set = {str(r["ibge_cod"]).strip() for r in csv.DictReader(f)}
+
+          with open(ALIAS_PATH, encoding="utf-8") as f:
+              alias_rows = list(csv.DictReader(f))
+
+          failures = []
+          for i, row in enumerate(alias_rows, 1):
+              ibge_raw = row.get("ibge_destino_validado","").strip()
+              ibge_int = ibge_raw.replace(".0","")
+              dest     = row.get("municipio_destino_validado","").strip()
+              if ibge_int not in ibge_set:
+                  failures.append(f"IBGE {ibge_int} '{dest}' não encontrado na base municipal")
+                  print(f"::error::C{i:02d} — IBGE {ibge_int} ('{dest}') não existe na base municipal")
+              else:
+                  print(f"  PASS  C{i:02d}: IBGE {ibge_int} '{dest}' — encontrado na base")
+
+          if failures:
+              print(f"\n::error::B6 FALHOU — {len(failures)} referência(s) órfã(s)")
+              sys.exit(1)
+          print(f"\n  B6 PASS — 12/12 IBGEs dos aliases confirmados na base municipal.")
+
+  # ============================================================
+  # JOB 7 — RESUMO FINAL E BADGE
+  # ============================================================
+  summary:
+    name: "Resumo Final · DMD v2.2"
+    runs-on: ubuntu-latest
+    needs:
+      - check-files
+      - check-metadata
+      - check-aliases
+      - check-nomenclature
+      - check-uf-consistency
+      - check-cross-consistency
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Gerar resumo no GitHub Step Summary
+        shell: python3 {0}
+        run: |
+          import os, datetime
+
+          needs = {
+              "B1 · Arquivos Obrigatórios":          "${{ needs.check-files.result }}",
+              "B2 · Metadados JSON":                 "${{ needs.check-metadata.result }}",
+              "B3 · 12 Aliases Materializados":      "${{ needs.check-aliases.result }}",
+              "B4 · Nomenclaturas Base Municipal":   "${{ needs.check-nomenclature.result }}",
+              "B5 · Consistência UF":                "${{ needs.check-uf-consistency.result }}",
+              "B6 · Cruzamento Aliases × Municipal": "${{ needs.check-cross-consistency.result }}",
+          }
+
+          icons = {"success": "✅", "failure": "❌", "skipped": "⏭️", "cancelled": "🚫"}
+          total = len(needs)
+          passed = sum(1 for v in needs.values() if v == "success")
+          pct = passed / total * 100
+
+          status_global = "APROVADO SEM RESSALVAS ✅" if passed == total else f"REPROVADO ❌ ({total-passed} bloco(s) com falha)"
+          now = datetime.datetime.utcnow().strftime("%d/%m/%Y %H:%M UTC")
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "w") as fh:
+              fh.write(f"# Relatório de Integridade — Base Canônica DMD v2.2\n\n")
+              fh.write(f"**EMET Gestão Brasil** · Gerado em {now}\n\n")
+              fh.write(f"| Métrica | Valor |\n|---|---|\n")
+              fh.write(f"| Total de blocos | {total} |\n")
+              fh.write(f"| Aprovados | **{passed}** |\n")
+              fh.write(f"| Reprovados | **{total - passed}** |\n")
+              fh.write(f"| Taxa de aprovação | **{pct:.0f}%** |\n")
+              fh.write(f"| **Status Global** | **{status_global}** |\n\n")
+              fh.write(f"## Resultado por Bloco\n\n")
+              fh.write(f"| Bloco | Status |\n|---|---|\n")
+              for name, result in needs.items():
+                  icon = icons.get(result, "❓")
+                  fh.write(f"| {name} | {icon} {result.upper()} |\n")
+              fh.write(f"\n---\n")
+              fh.write(f"> Repositório: `kbarrosfinal-netizen/dmd-saude-brasil`  \n")
+              fh.write(f"> Release: `releases/dmd-canonica-v2-2`  \n")
+              fh.write(f"> Dados de fontes 100% públicas e auditáveis — DATASUS/IBGE/FNS/SIOPS\n")
+
+          print(f"  Resumo gerado. Status global: {status_global}")
+          print(f"  Aprovados: {passed}/{total} ({pct:.0f}%)")
+
+      - name: Falhar o job se algum bloco falhou
+        if: |
+          needs.check-files.result == 'failure' ||
+          needs.check-metadata.result == 'failure' ||
+          needs.check-aliases.result == 'failure' ||
+          needs.check-nomenclature.result == 'failure' ||
+          needs.check-uf-consistency.result == 'failure' ||
+          needs.check-cross-consistency.result == 'failure'
+        run: |
+          echo "::error::Um ou mais blocos de validação falharam. Verifique o Step Summary acima."
+          exit 1

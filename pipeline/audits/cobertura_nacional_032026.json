@@ -1,0 +1,309 @@
+{
+  "competencia": "03/2026",
+  "linhas": [
+    {
+      "uf": "AC",
+      "total_mun": 22,
+      "cnes_real": 5,
+      "estimativa": 12,
+      "pendente": 5,
+      "pct_real": 22.7,
+      "fase": "FASE_1",
+      "mes_alvo": "Abril/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "AL",
+      "total_mun": 102,
+      "cnes_real": 8,
+      "estimativa": 68,
+      "pendente": 26,
+      "pct_real": 7.8,
+      "fase": "FASE_2",
+      "mes_alvo": "Maio/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "AM",
+      "total_mun": 62,
+      "cnes_real": 62,
+      "estimativa": 0,
+      "pendente": 0,
+      "pct_real": 100.0,
+      "fase": "COMPLETO",
+      "mes_alvo": "CONCLUÍDO",
+      "status": "🟢 COMPLETO"
+    },
+    {
+      "uf": "AP",
+      "total_mun": 16,
+      "cnes_real": 4,
+      "estimativa": 8,
+      "pendente": 4,
+      "pct_real": 25.0,
+      "fase": "FASE_1",
+      "mes_alvo": "Abril/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "BA",
+      "total_mun": 417,
+      "cnes_real": 45,
+      "estimativa": 280,
+      "pendente": 92,
+      "pct_real": 10.8,
+      "fase": "FASE_2",
+      "mes_alvo": "Maio/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "CE",
+      "total_mun": 184,
+      "cnes_real": 20,
+      "estimativa": 120,
+      "pendente": 44,
+      "pct_real": 10.9,
+      "fase": "FASE_2",
+      "mes_alvo": "Maio/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "DF",
+      "total_mun": 1,
+      "cnes_real": 1,
+      "estimativa": 0,
+      "pendente": 0,
+      "pct_real": 100.0,
+      "fase": "FASE_4",
+      "mes_alvo": "Julho/2026",
+      "status": "🟢 COMPLETO"
+    },
+    {
+      "uf": "ES",
+      "total_mun": 78,
+      "cnes_real": 12,
+      "estimativa": 50,
+      "pendente": 16,
+      "pct_real": 15.4,
+      "fase": "FASE_3",
+      "mes_alvo": "Junho/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "GO",
+      "total_mun": 246,
+      "cnes_real": 22,
+      "estimativa": 168,
+      "pendente": 56,
+      "pct_real": 8.9,
+      "fase": "FASE_4",
+      "mes_alvo": "Julho/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "MA",
+      "total_mun": 217,
+      "cnes_real": 15,
+      "estimativa": 148,
+      "pendente": 54,
+      "pct_real": 6.9,
+      "fase": "FASE_2",
+      "mes_alvo": "Maio/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "MG",
+      "total_mun": 853,
+      "cnes_real": 85,
+      "estimativa": 580,
+      "pendente": 188,
+      "pct_real": 10.0,
+      "fase": "FASE_3",
+      "mes_alvo": "Junho/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "MS",
+      "total_mun": 79,
+      "cnes_real": 10,
+      "estimativa": 52,
+      "pendente": 17,
+      "pct_real": 12.7,
+      "fase": "FASE_4",
+      "mes_alvo": "Julho/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "MT",
+      "total_mun": 141,
+      "cnes_real": 12,
+      "estimativa": 95,
+      "pendente": 34,
+      "pct_real": 8.5,
+      "fase": "FASE_4",
+      "mes_alvo": "Julho/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "PA",
+      "total_mun": 144,
+      "cnes_real": 22,
+      "estimativa": 95,
+      "pendente": 27,
+      "pct_real": 15.3,
+      "fase": "FASE_1",
+      "mes_alvo": "Abril/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "PB",
+      "total_mun": 223,
+      "cnes_real": 18,
+      "estimativa": 155,
+      "pendente": 50,
+      "pct_real": 8.1,
+      "fase": "FASE_2",
+      "mes_alvo": "Maio/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "PE",
+      "total_mun": 185,
+      "cnes_real": 22,
+      "estimativa": 120,
+      "pendente": 43,
+      "pct_real": 11.9,
+      "fase": "FASE_2",
+      "mes_alvo": "Maio/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "PI",
+      "total_mun": 224,
+      "cnes_real": 12,
+      "estimativa": 155,
+      "pendente": 57,
+      "pct_real": 5.4,
+      "fase": "FASE_2",
+      "mes_alvo": "Maio/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "PR",
+      "total_mun": 399,
+      "cnes_real": 42,
+      "estimativa": 265,
+      "pendente": 92,
+      "pct_real": 10.5,
+      "fase": "FASE_3",
+      "mes_alvo": "Junho/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "RJ",
+      "total_mun": 92,
+      "cnes_real": 18,
+      "estimativa": 58,
+      "pendente": 16,
+      "pct_real": 19.6,
+      "fase": "FASE_3",
+      "mes_alvo": "Junho/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "RN",
+      "total_mun": 167,
+      "cnes_real": 14,
+      "estimativa": 110,
+      "pendente": 43,
+      "pct_real": 8.4,
+      "fase": "FASE_2",
+      "mes_alvo": "Maio/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "RO",
+      "total_mun": 52,
+      "cnes_real": 8,
+      "estimativa": 32,
+      "pendente": 12,
+      "pct_real": 15.4,
+      "fase": "FASE_1",
+      "mes_alvo": "Abril/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "RR",
+      "total_mun": 15,
+      "cnes_real": 3,
+      "estimativa": 9,
+      "pendente": 3,
+      "pct_real": 20.0,
+      "fase": "FASE_1",
+      "mes_alvo": "Abril/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "RS",
+      "total_mun": 497,
+      "cnes_real": 55,
+      "estimativa": 328,
+      "pendente": 114,
+      "pct_real": 11.1,
+      "fase": "FASE_3",
+      "mes_alvo": "Junho/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "SC",
+      "total_mun": 295,
+      "cnes_real": 30,
+      "estimativa": 195,
+      "pendente": 70,
+      "pct_real": 10.2,
+      "fase": "FASE_3",
+      "mes_alvo": "Junho/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "SE",
+      "total_mun": 75,
+      "cnes_real": 10,
+      "estimativa": 48,
+      "pendente": 17,
+      "pct_real": 13.3,
+      "fase": "FASE_2",
+      "mes_alvo": "Maio/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "SP",
+      "total_mun": 645,
+      "cnes_real": 78,
+      "estimativa": 420,
+      "pendente": 147,
+      "pct_real": 12.1,
+      "fase": "FASE_3",
+      "mes_alvo": "Junho/2026",
+      "status": "🔴 PENDENTE"
+    },
+    {
+      "uf": "TO",
+      "total_mun": 139,
+      "cnes_real": 12,
+      "estimativa": 85,
+      "pendente": 42,
+      "pct_real": 8.6,
+      "fase": "FASE_1",
+      "mes_alvo": "Abril/2026",
+      "status": "🔴 PENDENTE"
+    }
+  ],
+  "totais": {
+    "total": 5570,
+    "cnes_real": 645,
+    "estimativa": 3656,
+    "pendente": 1269,
+    "pct_real": 11.6
+  }
+}

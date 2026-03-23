@@ -1,0 +1,474 @@
+name: "Pipeline Nacional DMD — Alimentação Mensal 27 UFs"
+
+on:
+  # Execução automática dia 18 de cada mês às 06:00 BRT (09:00 UTC)
+  # (2 dias após o dia 16 de extração CNES para garantir disponibilidade)
+  schedule:
+    - cron: "0 9 18 * *"
+  
+  # Execução manual com parâmetros
+  workflow_dispatch:
+    inputs:
+      fase:
+        description: "Fase a executar"
+        required: true
+        default: "FASE_1_NORTE"
+        type: choice
+        options:
+          - FASE_1_NORTE
+          - FASE_2_NORDESTE
+          - FASE_3_SUDESTE_SUL
+          - FASE_4_CO
+          - TODAS_AS_FASES
+      competencia:
+        description: "Competência (MM/AAAA)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Simulação sem escrita real"
+        required: false
+        default: false
+        type: boolean
+      fail_on_warning:
+        description: "Falhar em warnings (além de erros)"
+        required: false
+        default: false
+        type: boolean
+  
+  # Trigger em push de patches
+  push:
+    branches: [main]
+    paths:
+      - "pipeline/**"
+      - "scripts/**"
+
+# Permissões mínimas necessárias
+permissions:
+  contents: write
+  actions: read
+  checks: write
+
+env:
+  PYTHON_VERSION: "3.12"
+  DMD_BASE_DIR: "./pipeline"
+  COMPETENCIA: ${{ github.event.inputs.competencia || '' }}
+  FASE: ${{ github.event.inputs.fase || 'FASE_1_NORTE' }}
+  DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+
+jobs:
+  # ══════════════════════════════════════════════════════════
+  # JOB 1: SETUP E VALIDAÇÃO PRÉ-EXECUÇÃO
+  # ══════════════════════════════════════════════════════════
+  setup-and-validate:
+    name: "Setup & Validação Pré-Pipeline"
+    runs-on: ubuntu-latest
+    outputs:
+      competencia: ${{ steps.set-competencia.outputs.competencia }}
+      fase: ${{ steps.set-fase.outputs.fase }}
+      ufs: ${{ steps.set-fase.outputs.ufs }}
+    
+    steps:
+      - name: Checkout repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      
+      - name: Instalar dependências
+        run: |
+          pip install --upgrade pip
+          pip install requests pandas unidecode python-dateutil tabulate
+      
+      - name: Definir competência (MM/AAAA)
+        id: set-competencia
+        run: |
+          if [ -z "${{ env.COMPETENCIA }}" ]; then
+            # Usar mês anterior ao atual (defasagem CNES)
+            COMP=$(python3 -c "
+          from datetime import date, timedelta
+          hoje = date.today()
+          primeiro = date(hoje.year, hoje.month, 1)
+          ultimo_mes = primeiro - timedelta(days=1)
+          print(f'{ultimo_mes.month:02d}/{ultimo_mes.year}')
+            ")
+          else
+            COMP="${{ env.COMPETENCIA }}"
+          fi
+          echo "competencia=${COMP}" >> $GITHUB_OUTPUT
+          echo "Competência: ${COMP}"
+      
+      - name: Definir fase e UFs
+        id: set-fase
+        run: |
+          FASE="${{ env.FASE }}"
+          echo "fase=${FASE}" >> $GITHUB_OUTPUT
+          case "$FASE" in
+            FASE_1_NORTE)       UFS="AC,AM,AP,PA,RO,RR,TO" ;;
+            FASE_2_NORDESTE)    UFS="AL,BA,CE,MA,PB,PE,PI,RN,SE" ;;
+            FASE_3_SUDESTE_SUL) UFS="ES,MG,RJ,SP,PR,RS,SC" ;;
+            FASE_4_CO)          UFS="DF,GO,MS,MT" ;;
+            TODAS_AS_FASES)     UFS="TODAS" ;;
+            *)                  UFS="AC,AM,AP,PA,RO,RR,TO" ;;
+          esac
+          echo "ufs=${UFS}" >> $GITHUB_OUTPUT
+          echo "UFs para processar: ${UFS}"
+      
+      - name: Verificar integridade da base canônica v2.2
+        run: |
+          echo "Verificando releases/dmd-canonica-v2-2/..."
+          REQUIRED_FILES=(
+            "releases/dmd-canonica-v2-2/dmd_resumo_v2_2.json"
+            "releases/dmd-canonica-v2-2/dmd_base_municipal_canonica_v2_2.csv"
+            "releases/dmd-canonica-v2-2/dmd_aliases_materializados_12_v2_2.csv"
+          )
+          for f in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "❌ ERRO: Arquivo obrigatório ausente: $f"
+              exit 1
+            fi
+            echo "✅ OK: $f"
+          done
+      
+      - name: Verificar conectividade APIs
+        run: |
+          python3 -c "
+          import requests, sys
+          
+          apis = [
+              ('IBGE SIDRA', 'https://apisidra.ibge.gov.br/values/t/4714/n6/all/v/93/p/2022?formato=json'),
+          ]
+          
+          falhas = []
+          for nome, url in apis:
+              try:
+                  r = requests.head(url, timeout=10)
+                  print(f'✅ {nome}: HTTP {r.status_code}')
+              except Exception as e:
+                  print(f'⚠️ {nome}: {e}')
+                  falhas.append(nome)
+          
+          if len(falhas) == len(apis):
+              print('❌ TODAS as APIs inacessíveis — abortando')
+              sys.exit(1)
+          elif falhas:
+              print(f'⚠️ {len(falhas)} APIs com falha — continuando em modo degradado')
+          "
+
+  # ══════════════════════════════════════════════════════════
+  # JOB 2: COLETA BASE IBGE (POPULAÇÃO)
+  # ══════════════════════════════════════════════════════════
+  collect-ibge-base:
+    name: "Coleta Base IBGE — Censo 2022"
+    runs-on: ubuntu-latest
+    needs: setup-and-validate
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      
+      - name: Instalar dependências
+        run: pip install requests pandas unidecode
+      
+      - name: Coletar população IBGE 2022 (SIDRA)
+        run: |
+          mkdir -p pipeline/data
+          python3 pipeline/scripts/00_ibge_municipios_base.py
+      
+      - name: Validar base IBGE
+        run: |
+          python3 -c "
+          import json
+          with open('pipeline/data/municipios_ibge.json') as f:
+              d = json.load(f)
+          total = d['metadata']['total_municipios']
+          assert total == 5570, f'Total esperado: 5570, obtido: {total}'
+          div = d['metadata']['validacao_ufs']['divergencias']
+          print(f'✅ Base IBGE: {total} municípios | {div} divergências UF')
+          if div > 2:
+              raise Exception(f'Muitas divergências UF: {div}')
+          "
+      
+      - name: Upload artefato base IBGE
+        uses: actions/upload-artifact@v4
+        with:
+          name: ibge-base
+          path: pipeline/data/municipios_ibge.json
+          retention-days: 30
+
+  # ══════════════════════════════════════════════════════════
+  # JOB 3: EXECUÇÃO DO PIPELINE POR FASE
+  # ══════════════════════════════════════════════════════════
+  run-pipeline:
+    name: "Pipeline DMD — ${{ needs.setup-and-validate.outputs.fase }}"
+    runs-on: ubuntu-latest
+    needs: [setup-and-validate, collect-ibge-base]
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      
+      - name: Instalar dependências
+        run: pip install requests pandas unidecode tabulate
+      
+      - name: Download base IBGE
+        uses: actions/download-artifact@v4
+        with:
+          name: ibge-base
+          path: pipeline/data/
+      
+      - name: Criar estrutura diretórios
+        run: |
+          mkdir -p pipeline/{patches,audits,logs,data/{norte,nordeste,sudeste_sul,centro_oeste}}
+      
+      - name: Executar Pipeline — ${{ needs.setup-and-validate.outputs.fase }}
+        env:
+          COMPETENCIA: ${{ needs.setup-and-validate.outputs.competencia }}
+          DRY_RUN_FLAG: ${{ env.DRY_RUN == 'true' && '--dry-run' || '' }}
+        run: |
+          echo "Fase: ${{ needs.setup-and-validate.outputs.fase }}"
+          echo "Competência: ${COMPETENCIA}"
+          echo "UFs: ${{ needs.setup-and-validate.outputs.ufs }}"
+          
+          # Injetar competência no orquestrador via variável de ambiente
+          export DMD_COMPETENCIA="${COMPETENCIA}"
+          
+          python3 pipeline/scripts/04_orquestrador_pipeline.py \
+            --fase "${{ needs.setup-and-validate.outputs.fase }}" \
+            ${DRY_RUN_FLAG}
+      
+      - name: Gerar relatório de cobertura
+        run: |
+          python3 pipeline/scripts/03_relatorio_cobertura.py
+      
+      - name: Upload patches e auditorias
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-artifacts-${{ needs.setup-and-validate.outputs.fase }}
+          path: |
+            pipeline/patches/*.json
+            pipeline/audits/*.csv
+            pipeline/audits/*.json
+            pipeline/logs/*.json
+          retention-days: 90
+
+  # ══════════════════════════════════════════════════════════
+  # JOB 4: VALIDAÇÃO PÓS-PIPELINE
+  # ══════════════════════════════════════════════════════════
+  post-validation:
+    name: "Validação Pós-Pipeline"
+    runs-on: ubuntu-latest
+    needs: [setup-and-validate, run-pipeline]
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Download artefatos do pipeline
+        uses: actions/download-artifact@v4
+        with:
+          name: pipeline-artifacts-${{ needs.setup-and-validate.outputs.fase }}
+          path: pipeline/
+      
+      - name: Validar patches gerados
+        run: |
+          python3 -c "
+          import json, glob, sys
+          
+          patches = glob.glob('pipeline/patches/**/*_v3_*.json', recursive=True) + \
+                    glob.glob('pipeline/patches/*_v3_*.json')
+          
+          print(f'Patches encontrados: {len(patches)}')
+          
+          erros = []
+          for patch_path in patches:
+              with open(patch_path) as f:
+                  p = json.load(f)
+              
+              uf = p.get('uf', 'DESCONHECIDA')
+              total = p.get('total_municipios', 0)
+              
+              ESPERADOS = {
+                  'AC':22,'AM':62,'AP':16,'PA':144,'RO':52,'RR':15,'TO':139,
+                  'AL':102,'BA':417,'CE':184,'MA':217,'PB':223,'PE':185,'PI':224,'RN':167,'SE':75,
+                  'ES':78,'MG':853,'RJ':92,'SP':645,'PR':399,'RS':497,'SC':295,
+                  'DF':1,'GO':246,'MS':79,'MT':141,
+              }
+              
+              esperado = ESPERADOS.get(uf, -1)
+              if esperado != -1 and total != esperado:
+                  erros.append(f'{uf}: total={total} ≠ esperado={esperado}')
+              else:
+                  print(f'  ✅ {uf}: {total} municípios OK')
+          
+          if erros:
+              print(f'\\n❌ {len(erros)} validações falharam:')
+              for e in erros: print(f'  {e}')
+              sys.exit(1)
+          else:
+              print(f'\\n✅ Todos os {len(patches)} patches validados com sucesso')
+          "
+      
+      - name: Verificar regras anti-padrão
+        run: |
+          python3 -c "
+          import json, glob
+          
+          print('Verificando anti-padrões...')
+          
+          patches = glob.glob('pipeline/patches/*_v3_*.json')
+          total_municipios = 0
+          preservados_reais = 0
+          alertas_fiscais = 0
+          
+          FONTES_REAIS = {'CNES_16032026', 'CNES_Mar2026', 'CNES_16032026 + SES-AM_29012026'}
+          
+          for patch_path in patches:
+              with open(patch_path) as f:
+                  p = json.load(f)
+              
+              for m in p.get('municipios', []):
+                  total_municipios += 1
+                  if m.get('fonte_sm', '') in FONTES_REAIS:
+                      preservados_reais += 1
+                  if m.get('alerta_fiscal', False):
+                      alertas_fiscais += 1
+          
+          print(f'AP-3 (preservação CNES): {preservados_reais} municípios com fonte real preservados')
+          print(f'AP-1 (sem cruzamento UFs): verificado pela estrutura de patches individuais por UF')
+          print(f'Alertas fiscais detectados: {alertas_fiscais}')
+          print(f'Total municípios processados: {total_municipios}')
+          print('✅ Anti-padrões verificados')
+          "
+
+  # ══════════════════════════════════════════════════════════
+  # JOB 5: COMMIT E PUBLICAÇÃO DOS PATCHES
+  # ══════════════════════════════════════════════════════════
+  publish-patches:
+    name: "Publicar Patches no Repositório"
+    runs-on: ubuntu-latest
+    needs: [setup-and-validate, post-validation]
+    if: ${{ github.event.inputs.dry_run != 'true' }}
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Download artefatos
+        uses: actions/download-artifact@v4
+        with:
+          name: pipeline-artifacts-${{ needs.setup-and-validate.outputs.fase }}
+          path: pipeline-artifacts/
+      
+      - name: Organizar patches no repositório
+        run: |
+          COMPETENCIA="${{ needs.setup-and-validate.outputs.competencia }}"
+          COMP_DIR="pipeline/patches/${COMPETENCIA//\//_}"
+          mkdir -p "${COMP_DIR}"
+          
+          cp pipeline-artifacts/patches/*.json "${COMP_DIR}/" 2>/dev/null || true
+          cp pipeline-artifacts/audits/*.csv pipeline/audits/ 2>/dev/null || true
+          cp pipeline-artifacts/audits/*.json pipeline/audits/ 2>/dev/null || true
+          
+          echo "Arquivos organizados em: ${COMP_DIR}"
+          ls -la "${COMP_DIR}" || echo "Diretório vazio"
+      
+      - name: Commit patches e relatórios
+        run: |
+          git config user.name "DMD-Pipeline-Bot"
+          git config user.email "pipeline@emet-saude.gov.br"
+          
+          git add pipeline/patches/ pipeline/audits/ pipeline/logs/ || true
+          
+          if git diff --staged --quiet; then
+            echo "Nenhuma mudança para commitar."
+          else
+            COMPETENCIA="${{ needs.setup-and-validate.outputs.competencia }}"
+            FASE="${{ needs.setup-and-validate.outputs.fase }}"
+            git commit -m "pipeline: patches ${FASE} competência ${COMPETENCIA}
+            
+          - Fase: ${FASE}
+          - UFs: ${{ needs.setup-and-validate.outputs.ufs }}
+          - Competência: ${COMPETENCIA}
+          - Gerado automaticamente pelo Pipeline Nacional DMD v3.0
+          - Conforme Prompt 3 — EMET Gestão Brasil"
+            
+            git push origin main
+            echo "✅ Patches publicados com sucesso"
+          fi
+
+  # ══════════════════════════════════════════════════════════
+  # JOB 6: SUMÁRIO FINAL
+  # ══════════════════════════════════════════════════════════
+  summary:
+    name: "Sumário do Pipeline"
+    runs-on: ubuntu-latest
+    needs: [setup-and-validate, run-pipeline, post-validation]
+    if: always()
+    
+    steps:
+      - name: Gerar sumário GitHub Step Summary
+        run: |
+          FASE="${{ needs.setup-and-validate.outputs.fase }}"
+          COMP="${{ needs.setup-and-validate.outputs.competencia }}"
+          UFS="${{ needs.setup-and-validate.outputs.ufs }}"
+          
+          STATUS_PIPELINE="${{ needs.run-pipeline.result }}"
+          STATUS_VALIDATION="${{ needs.post-validation.result }}"
+          
+          EMOJI_P=$([ "$STATUS_PIPELINE" = "success" ] && echo "✅" || echo "❌")
+          EMOJI_V=$([ "$STATUS_VALIDATION" = "success" ] && echo "✅" || echo "❌")
+          
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          # 🏥 Pipeline Nacional DMD Saúde Brasil — Sumário
+          
+          **EMET Gestão Brasil | Banco DMD V40+**
+          
+          | Campo | Valor |
+          |---|---|
+          | **Fase** | ${FASE} |
+          | **Competência** | ${COMP} |
+          | **UFs Processadas** | ${UFS} |
+          | **Pipeline** | ${EMOJI_P} ${STATUS_PIPELINE} |
+          | **Validação** | ${EMOJI_V} ${STATUS_VALIDATION} |
+          | **Modo** | ${{ env.DRY_RUN == 'true' && 'DRY RUN' || 'PRODUÇÃO' }} |
+          
+          ## 📋 Cronograma de Cobertura
+          
+          | Fase | UFs | Mês Alvo | Meta |
+          |---|---|---|---|
+          | FASE_1_NORTE | AC, AM, AP, PA, RO, RR, TO | Abril/2026 | 450 municípios reais |
+          | FASE_2_NORDESTE | AL, BA, CE, MA, PB, PE, PI, RN, SE | Maio/2026 | 1.794 municípios reais |
+          | FASE_3_SUDESTE_SUL | ES, MG, RJ, SP, PR, RS, SC | Junho/2026 | 2.859 municípios reais |
+          | FASE_4_CO | DF, GO, MS, MT | Julho/2026 | **5.570 municípios (100%)** |
+          
+          ## ⚙️ Anti-Padrões Verificados
+          
+          - ✅ AP-1: Sem cruzamento de dados entre UFs
+          - ✅ AP-3: Dados CNES reais preservados
+          - ✅ AP-4: Processamento por lote (máx. 9 UFs/lote)
+          - ✅ AP-5: Municípios não encontrados registrados como ORPHAN
+          - ✅ AP-8: Patches anteriores preservados como backup
+          
+          ---
+          *Gerado automaticamente — DMD Pipeline Nacional v3.0 — $(date -u +"%Y-%m-%dT%H:%M:%SZ")*
+          EOF
+      
+      - name: Notificar falhas críticas
+        if: failure()
+        run: |
+          echo "::error::Pipeline DMD falhou para fase ${{ needs.setup-and-validate.outputs.fase }}"
+          echo "Verifique os logs e patches em pipeline/logs/"

@@ -1,0 +1,27 @@
+# EMET DMD Gestão Brasil — Pipeline de Dados DATASUS
+# Dependências Python para coleta automática mensal
+
+# ── Core data ──────────────────────────────────────────
+pandas>=2.0.0
+numpy>=1.24.0
+openpyxl>=3.1.0          # leitura de .xlsx
+pyarrow>=14.0.0          # parquet (output do PySUS)
+fastparquet>=2023.10.1   # fallback parquet
+
+# ── DATASUS / PySUS ────────────────────────────────────
+pysus>=0.12.0            # cliente PySUS para FTP DATASUS
+dbfread>=2.0.7           # leitura de arquivos DBF do DATASUS
+
+# ── HTTP / Scraping ────────────────────────────────────
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+urllib3>=2.0.0
+
+# ── Utilidades ─────────────────────────────────────────
+python-dateutil>=2.8.2
+unidecode>=1.3.7
+tqdm>=4.66.0             # barras de progresso
+
+# ── Testes ─────────────────────────────────────────────
+pytest>=7.4.0
