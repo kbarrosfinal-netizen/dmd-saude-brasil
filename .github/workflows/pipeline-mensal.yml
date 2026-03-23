@@ -1,0 +1,466 @@
+name: "EMET DMD — Pipeline Mensal DATASUS + GitHub Pages"
+
+# ═══════════════════════════════════════════════════════════════════════
+# TRIGGERS
+# ═══════════════════════════════════════════════════════════════════════
+on:
+  # Execução automática: dia 20 de cada mês às 06:00 BRT (09:00 UTC)
+  # (3 dias após competência CNES disponível no FTP — publicação dia 17)
+  schedule:
+    - cron: "0 9 20 * *"
+
+  # Execução manual via GitHub UI
+  workflow_dispatch:
+    inputs:
+      skip_cnes:
+        description: "Pular coleta CNES (usar cache)"
+        required: false
+        default: "false"
+        type: boolean
+      skip_tabnet:
+        description: "Pular coleta TabNet"
+        required: false
+        default: "false"
+        type: boolean
+      dry_run:
+        description: "Simulação sem gravação"
+        required: false
+        default: "false"
+        type: boolean
+      only_dashboard:
+        description: "Apenas regenerar dashboard"
+        required: false
+        default: "false"
+        type: boolean
+
+  # Trigger em push na pasta de scripts
+  push:
+    branches: [main]
+    paths:
+      - "pipeline/scripts/**"
+      - "requirements.txt"
+      - ".github/workflows/pipeline-mensal.yml"
+
+# ═══════════════════════════════════════════════════════════════════════
+# PERMISSÕES
+# ═══════════════════════════════════════════════════════════════════════
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  actions: read
+
+# ═══════════════════════════════════════════════════════════════════════
+# VARIÁVEIS GLOBAIS
+# ═══════════════════════════════════════════════════════════════════════
+env:
+  PYTHON_VERSION: "3.12"
+  PIPELINE_DIR: "pipeline"
+
+# ═══════════════════════════════════════════════════════════════════════
+# JOBS
+# ═══════════════════════════════════════════════════════════════════════
+jobs:
+
+  # ────────────────────────────────────────────────────────────────────
+  # JOB 1: SETUP & VALIDAÇÃO
+  # ────────────────────────────────────────────────────────────────────
+  setup:
+    name: "⚙️ Setup & Validação"
+    runs-on: ubuntu-latest
+    outputs:
+      competencia: ${{ steps.comp.outputs.competencia }}
+      skip_cnes:   ${{ github.event.inputs.skip_cnes || 'false' }}
+      skip_tabnet: ${{ github.event.inputs.skip_tabnet || 'false' }}
+      dry_run:     ${{ github.event.inputs.dry_run || 'false' }}
+      only_dashboard: ${{ github.event.inputs.only_dashboard || 'false' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Instalar dependências mínimas
+        run: |
+          pip install --upgrade pip
+          pip install requests pandas python-dateutil
+
+      - name: Calcular competência (mês anterior)
+        id: comp
+        run: |
+          COMP=$(python3 -c "
+          from datetime import date, timedelta
+          hoje = date.today()
+          primeiro = date(hoje.year, hoje.month, 1)
+          mes_ant = primeiro - timedelta(days=1)
+          print(f'{mes_ant.year}{mes_ant.month:02d}')
+          ")
+          echo "competencia=${COMP}" >> $GITHUB_OUTPUT
+          echo "📅 Competência: ${COMP}"
+
+      - name: Verificar conectividade FTP DATASUS
+        run: |
+          python3 -c "
+          import ftplib, sys
+          try:
+              ftp = ftplib.FTP('ftp.datasus.gov.br', timeout=30)
+              ftp.login()
+              ftp.quit()
+              print('✅ FTP DATASUS acessível')
+          except Exception as e:
+              print(f'⚠️ FTP indisponível: {e}')
+              print('Pipeline continuará com fallback local')
+          "
+
+      - name: Verificar estrutura do repositório
+        run: |
+          echo "Estrutura do pipeline:"
+          ls -la pipeline/ || echo "Pasta pipeline/ não encontrada"
+          ls -la pipeline/scripts/ || echo "Scripts não encontrados"
+
+  # ────────────────────────────────────────────────────────────────────
+  # JOB 2: COLETA CNES (PySUS + FTP Fallback)
+  # ────────────────────────────────────────────────────────────────────
+  coletar-cnes:
+    name: "📥 Coletar CNES DATASUS"
+    runs-on: ubuntu-latest
+    needs: setup
+    if: ${{ needs.setup.outputs.skip_cnes != 'true' && needs.setup.outputs.only_dashboard != 'true' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Instalar dependências CNES
+        run: |
+          pip install --upgrade pip
+          # PySUS pode demorar — instalar com timeout
+          pip install pandas pyarrow requests python-dateutil tqdm || true
+          pip install pysus || echo "⚠️ PySUS falhou — usando FTP direto"
+
+      - name: Criar diretórios
+        run: mkdir -p pipeline/data/{cnes,logs}
+
+      - name: Executar coleta CNES
+        env:
+          COMPETENCIA: ${{ needs.setup.outputs.competencia }}
+          DRY_RUN: ${{ needs.setup.outputs.dry_run }}
+        run: |
+          cd pipeline
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "[DRY-RUN] Simulando coleta CNES para competência ${COMPETENCIA}"
+            echo '{"competencia":"'"${COMPETENCIA}"'","status":"dry_run","grupos":{}}' > data/cnes/coleta_resumo_${COMPETENCIA}.json
+          else
+            python3 scripts/00_coletor_cnes.py
+          fi
+
+      - name: Upload artefatos CNES
+        uses: actions/upload-artifact@v4
+        with:
+          name: cnes-data-${{ needs.setup.outputs.competencia }}
+          path: |
+            pipeline/data/cnes/*.json
+            pipeline/data/cnes/*.parquet
+            pipeline/data/logs/cnes_*.log
+          retention-days: 60
+          if-no-files-found: warn
+
+  # ────────────────────────────────────────────────────────────────────
+  # JOB 3: COLETA TABNET
+  # ────────────────────────────────────────────────────────────────────
+  coletar-tabnet:
+    name: "🌐 Coletar TabNet CAPS/SRT"
+    runs-on: ubuntu-latest
+    needs: setup
+    if: ${{ needs.setup.outputs.skip_tabnet != 'true' && needs.setup.outputs.only_dashboard != 'true' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Instalar dependências TabNet
+        run: pip install requests beautifulsoup4 lxml pandas
+
+      - name: Criar diretórios
+        run: mkdir -p pipeline/data/{tabnet,logs}
+
+      - name: Executar coleta TabNet
+        env:
+          DRY_RUN: ${{ needs.setup.outputs.dry_run }}
+        run: |
+          cd pipeline
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "[DRY-RUN] Simulando coleta TabNet"
+            echo '{"status":"dry_run","registros":[]}' > data/tabnet/caps_tabnet_$(date +%Y%m).json
+          else
+            python3 scripts/01_coletor_tabnet.py
+          fi
+
+      - name: Upload artefatos TabNet
+        uses: actions/upload-artifact@v4
+        with:
+          name: tabnet-data
+          path: |
+            pipeline/data/tabnet/*.json
+            pipeline/data/logs/tabnet_*.log
+          retention-days: 30
+          if-no-files-found: warn
+
+  # ────────────────────────────────────────────────────────────────────
+  # JOB 4: NORMALIZAÇÃO
+  # ────────────────────────────────────────────────────────────────────
+  normalizar:
+    name: "🔄 Normalizar e Integrar Dados"
+    runs-on: ubuntu-latest
+    needs: [setup, coletar-cnes, coletar-tabnet]
+    if: always() && needs.setup.result == 'success'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Instalar dependências
+        run: pip install pandas pyarrow openpyxl python-dateutil unidecode
+
+      - name: Criar diretórios
+        run: mkdir -p pipeline/data/logs
+
+      - name: Download artefatos CNES
+        uses: actions/download-artifact@v4
+        with:
+          name: cnes-data-${{ needs.setup.outputs.competencia }}
+          path: pipeline/data/cnes/
+        continue-on-error: true
+
+      - name: Download artefatos TabNet
+        uses: actions/download-artifact@v4
+        with:
+          name: tabnet-data
+          path: pipeline/data/tabnet/
+        continue-on-error: true
+
+      - name: Executar normalização
+        env:
+          DRY_RUN: ${{ needs.setup.outputs.dry_run }}
+        run: |
+          cd pipeline
+          python3 scripts/02_normalizador.py
+
+      - name: Upload dashboard_data.json
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-data
+          path: pipeline/data/dashboard_data.json
+          retention-days: 30
+
+  # ────────────────────────────────────────────────────────────────────
+  # JOB 5: GERAR DASHBOARD HTML
+  # ────────────────────────────────────────────────────────────────────
+  gerar-dashboard:
+    name: "📊 Gerar Dashboard HTML"
+    runs-on: ubuntu-latest
+    needs: [setup, normalizar]
+    if: always() && needs.setup.result == 'success'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Instalar dependências
+        run: pip install pandas
+
+      - name: Criar diretórios
+        run: mkdir -p pipeline/{data,pages}
+
+      - name: Download dashboard_data.json
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard-data
+          path: pipeline/data/
+        continue-on-error: true
+
+      - name: Gerar Dashboard HTML
+        run: |
+          cd pipeline
+          python3 scripts/03_gerar_dashboard.py
+
+      - name: Verificar dashboard gerado
+        run: |
+          SIZE=$(stat -c%s pipeline/pages/index.html 2>/dev/null || echo 0)
+          echo "Dashboard: ${SIZE} bytes"
+          if [ "$SIZE" -lt 10000 ]; then
+            echo "⚠️ Dashboard muito pequeno — pode estar incompleto"
+          else
+            echo "✅ Dashboard válido: ${SIZE} bytes"
+          fi
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pipeline/pages/
+
+      - name: Upload dashboard HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-html
+          path: pipeline/pages/index.html
+          retention-days: 90
+
+  # ────────────────────────────────────────────────────────────────────
+  # JOB 6: DEPLOY GITHUB PAGES
+  # ────────────────────────────────────────────────────────────────────
+  deploy-pages:
+    name: "🚀 Deploy GitHub Pages"
+    runs-on: ubuntu-latest
+    needs: gerar-dashboard
+    if: ${{ github.event.inputs.dry_run != 'true' && github.ref == 'refs/heads/main' }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # ────────────────────────────────────────────────────────────────────
+  # JOB 7: COMMIT DADOS AO REPOSITÓRIO
+  # ────────────────────────────────────────────────────────────────────
+  commit-dados:
+    name: "💾 Commit Dados Atualizados"
+    runs-on: ubuntu-latest
+    needs: [setup, normalizar, gerar-dashboard]
+    if: ${{ github.event.inputs.dry_run != 'true' && needs.normalizar.result == 'success' }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download dashboard_data.json
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard-data
+          path: pipeline/data/
+        continue-on-error: true
+
+      - name: Download dashboard HTML
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard-html
+          path: pipeline/pages/
+        continue-on-error: true
+
+      - name: Commit e push atualizações
+        run: |
+          git config user.name  "DMD-Pipeline-Bot"
+          git config user.email "pipeline@emet-dmd.gov.br"
+
+          git add pipeline/data/dashboard_data.json \
+                  pipeline/pages/index.html \
+                  pipeline/data/logs/ || true
+
+          if git diff --staged --quiet; then
+            echo "ℹ️ Nenhuma mudança para commitar"
+          else
+            COMP="${{ needs.setup.outputs.competencia }}"
+            git commit -m "pipeline: atualização automática competência ${COMP}
+
+          - Coleta CNES: grupos ST, LT, SR, EP
+          - Fonte: DATASUS FTP + PySUS
+          - Competência: ${COMP}
+          - Dashboard v5.1 regenerado
+          - Gerado automaticamente pelo EMET DMD Pipeline v5.1"
+
+            git push origin main
+            echo "✅ Dados publicados no repositório"
+          fi
+
+  # ────────────────────────────────────────────────────────────────────
+  # JOB 8: SUMÁRIO FINAL
+  # ────────────────────────────────────────────────────────────────────
+  sumario:
+    name: "📋 Sumário do Pipeline"
+    runs-on: ubuntu-latest
+    needs: [setup, coletar-cnes, coletar-tabnet, normalizar, gerar-dashboard, deploy-pages]
+    if: always()
+
+    steps:
+      - name: Gerar sumário
+        run: |
+          COMP="${{ needs.setup.outputs.competencia }}"
+          S_CNES="${{ needs.coletar-cnes.result }}"
+          S_TABNET="${{ needs.coletar-tabnet.result }}"
+          S_NORM="${{ needs.normalizar.result }}"
+          S_DASH="${{ needs.gerar-dashboard.result }}"
+          S_DEPLOY="${{ needs.deploy-pages.result }}"
+
+          ok() { [ "$1" = "success" ] && echo "✅" || echo "❌"; }
+
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          # 🏥 EMET DMD Gestão Brasil — Pipeline Mensal
+
+          **Competência:** ${COMP}
+          **Repositório:** kbarrosfinal-netizen/dmd-saude-brasil
+          **Executado:** $(date -u +'%d/%m/%Y %H:%M UTC')
+
+          ## Resultado por Etapa
+
+          | Etapa | Status |
+          |---|---|
+          | Coleta CNES | $(ok $S_CNES) ${S_CNES} |
+          | Coleta TabNet | $(ok $S_TABNET) ${S_TABNET} |
+          | Normalização | $(ok $S_NORM) ${S_NORM} |
+          | Dashboard HTML | $(ok $S_DASH) ${S_DASH} |
+          | GitHub Pages | $(ok $S_DEPLOY) ${S_DEPLOY} |
+
+          ## KPIs do Banco
+
+          | Indicador | Valor |
+          |---|---|
+          | Municípios | 5.569 |
+          | Habitantes | 207,2 M |
+          | CAPS Ativos | 3.738 |
+          | SRT Residências | 343 |
+          | Leitos SUS | 424.350 |
+          | Alertas Fiscais | 325 |
+
+          ## 🌐 Acesso ao Dashboard
+
+          | Canal | URL |
+          |---|---|
+          | GitHub Pages | https://kbarrosfinal-netizen.github.io/dmd-saude-brasil/ |
+          | Repositório | https://github.com/kbarrosfinal-netizen/dmd-saude-brasil |
+
+          ---
+          *EMET DMD Gestão Brasil · Pipeline Nacional v5.1*
+          EOF
+
+      - name: Notificar falha crítica
+        if: ${{ needs.gerar-dashboard.result == 'failure' }}
+        run: |
+          echo "::error::Dashboard não foi gerado — verificar logs do job gerar-dashboard"
+          exit 1
