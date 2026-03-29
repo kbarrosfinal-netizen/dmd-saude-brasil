@@ -1,0 +1,1193 @@
+{
+  "fonte": "TabNet SIH",
+  "series": {
+    "RO": {
+      "2020": {
+        "aih_qtd": 104572,
+        "aih_valor": 110011617.1,
+        "obitos_hosp": 4000,
+        "custo_aih": 1052.02,
+        "let_hosp": 3.83
+      },
+      "2021": {
+        "aih_qtd": 115341,
+        "aih_valor": 154245547.0,
+        "obitos_hosp": 5703,
+        "custo_aih": 1337.3,
+        "let_hosp": 4.94
+      },
+      "2022": {
+        "aih_qtd": 120620,
+        "aih_valor": 124764936.01,
+        "obitos_hosp": 3868,
+        "custo_aih": 1034.36,
+        "let_hosp": 3.21
+      },
+      "2023": {
+        "aih_qtd": 128990,
+        "aih_valor": 136373773.22,
+        "obitos_hosp": 3906,
+        "custo_aih": 1057.24,
+        "let_hosp": 3.03
+      },
+      "2024": {
+        "aih_qtd": 134744,
+        "aih_valor": 164759200.45,
+        "obitos_hosp": 3928,
+        "custo_aih": 1222.76,
+        "let_hosp": 2.92
+      },
+      "2025": {
+        "aih_qtd": 138942,
+        "aih_valor": 160815038.32,
+        "obitos_hosp": 4331,
+        "custo_aih": 1157.43,
+        "let_hosp": 3.12
+      }
+    },
+    "AC": {
+      "2020": {
+        "aih_qtd": 43227,
+        "aih_valor": 40018213.54,
+        "obitos_hosp": 1906,
+        "custo_aih": 925.77,
+        "let_hosp": 4.41
+      },
+      "2021": {
+        "aih_qtd": 48684,
+        "aih_valor": 50689465.28,
+        "obitos_hosp": 2295,
+        "custo_aih": 1041.19,
+        "let_hosp": 4.71
+      },
+      "2022": {
+        "aih_qtd": 49547,
+        "aih_valor": 43377991.73,
+        "obitos_hosp": 1706,
+        "custo_aih": 875.49,
+        "let_hosp": 3.44
+      },
+      "2023": {
+        "aih_qtd": 59835,
+        "aih_valor": 54993617.42,
+        "obitos_hosp": 1786,
+        "custo_aih": 919.09,
+        "let_hosp": 2.98
+      },
+      "2024": {
+        "aih_qtd": 57272,
+        "aih_valor": 58841679.32,
+        "obitos_hosp": 1805,
+        "custo_aih": 1027.41,
+        "let_hosp": 3.15
+      },
+      "2025": {
+        "aih_qtd": 57053,
+        "aih_valor": 59229193.5,
+        "obitos_hosp": 1687,
+        "custo_aih": 1038.14,
+        "let_hosp": 2.96
+      }
+    },
+    "AM": {
+      "2020": {
+        "aih_qtd": 179730,
+        "aih_valor": 210298047.43,
+        "obitos_hosp": 9377,
+        "custo_aih": 1170.08,
+        "let_hosp": 5.22
+      },
+      "2021": {
+        "aih_qtd": 211514,
+        "aih_valor": 270903741.14,
+        "obitos_hosp": 11772,
+        "custo_aih": 1280.78,
+        "let_hosp": 5.57
+      },
+      "2022": {
+        "aih_qtd": 209258,
+        "aih_valor": 237728236.19,
+        "obitos_hosp": 7516,
+        "custo_aih": 1136.05,
+        "let_hosp": 3.59
+      },
+      "2023": {
+        "aih_qtd": 214624,
+        "aih_valor": 243509737.9,
+        "obitos_hosp": 7046,
+        "custo_aih": 1134.59,
+        "let_hosp": 3.28
+      },
+      "2024": {
+        "aih_qtd": 226003,
+        "aih_valor": 265873046.61,
+        "obitos_hosp": 7070,
+        "custo_aih": 1176.41,
+        "let_hosp": 3.13
+      },
+      "2025": {
+        "aih_qtd": 263186,
+        "aih_valor": 320965848.37,
+        "obitos_hosp": 8215,
+        "custo_aih": 1219.54,
+        "let_hosp": 3.12
+      }
+    },
+    "RR": {
+      "2020": {
+        "aih_qtd": 39561,
+        "aih_valor": 36868427.83,
+        "obitos_hosp": 1666,
+        "custo_aih": 931.94,
+        "let_hosp": 4.21
+      },
+      "2021": {
+        "aih_qtd": 42230,
+        "aih_valor": 43779114.13,
+        "obitos_hosp": 2260,
+        "custo_aih": 1036.68,
+        "let_hosp": 5.35
+      },
+      "2022": {
+        "aih_qtd": 46613,
+        "aih_valor": 43564927.37,
+        "obitos_hosp": 1340,
+        "custo_aih": 934.61,
+        "let_hosp": 2.87
+      },
+      "2023": {
+        "aih_qtd": 45354,
+        "aih_valor": 45350901.58,
+        "obitos_hosp": 1450,
+        "custo_aih": 999.93,
+        "let_hosp": 3.2
+      },
+      "2024": {
+        "aih_qtd": 37388,
+        "aih_valor": 39826439.88,
+        "obitos_hosp": 1123,
+        "custo_aih": 1065.22,
+        "let_hosp": 3.0
+      },
+      "2025": {
+        "aih_qtd": 34724,
+        "aih_valor": 45309802.04,
+        "obitos_hosp": 1005,
+        "custo_aih": 1304.86,
+        "let_hosp": 2.89
+      }
+    },
+    "PA": {
+      "2020": {
+        "aih_qtd": 433599,
+        "aih_valor": 447222369.54,
+        "obitos_hosp": 14980,
+        "custo_aih": 1031.42,
+        "let_hosp": 3.45
+      },
+      "2021": {
+        "aih_qtd": 473399,
+        "aih_valor": 540354161.83,
+        "obitos_hosp": 17704,
+        "custo_aih": 1141.43,
+        "let_hosp": 3.74
+      },
+      "2022": {
+        "aih_qtd": 501556,
+        "aih_valor": 545720282.29,
+        "obitos_hosp": 14597,
+        "custo_aih": 1088.05,
+        "let_hosp": 2.91
+      },
+      "2023": {
+        "aih_qtd": 526874,
+        "aih_valor": 599258197.06,
+        "obitos_hosp": 14281,
+        "custo_aih": 1137.38,
+        "let_hosp": 2.71
+      },
+      "2024": {
+        "aih_qtd": 551054,
+        "aih_valor": 655477859.54,
+        "obitos_hosp": 14876,
+        "custo_aih": 1189.5,
+        "let_hosp": 2.7
+      },
+      "2025": {
+        "aih_qtd": 573761,
+        "aih_valor": 735436646.05,
+        "obitos_hosp": 16339,
+        "custo_aih": 1281.78,
+        "let_hosp": 2.85
+      }
+    },
+    "AP": {
+      "2020": {
+        "aih_qtd": 31973,
+        "aih_valor": 27872333.42,
+        "obitos_hosp": 1406,
+        "custo_aih": 871.75,
+        "let_hosp": 4.4
+      },
+      "2021": {
+        "aih_qtd": 39867,
+        "aih_valor": 45565140.13,
+        "obitos_hosp": 1813,
+        "custo_aih": 1142.93,
+        "let_hosp": 4.55
+      },
+      "2022": {
+        "aih_qtd": 41312,
+        "aih_valor": 35931724.12,
+        "obitos_hosp": 1308,
+        "custo_aih": 869.76,
+        "let_hosp": 3.17
+      },
+      "2023": {
+        "aih_qtd": 56851,
+        "aih_valor": 47548617.65,
+        "obitos_hosp": 1529,
+        "custo_aih": 836.37,
+        "let_hosp": 2.69
+      },
+      "2024": {
+        "aih_qtd": 57245,
+        "aih_valor": 49734244.9,
+        "obitos_hosp": 1434,
+        "custo_aih": 868.8,
+        "let_hosp": 2.51
+      },
+      "2025": {
+        "aih_qtd": 57873,
+        "aih_valor": 54508024.62,
+        "obitos_hosp": 1443,
+        "custo_aih": 941.86,
+        "let_hosp": 2.49
+      }
+    },
+    "TO": {
+      "2020": {
+        "aih_qtd": 77103,
+        "aih_valor": 92885843.76,
+        "obitos_hosp": 3441,
+        "custo_aih": 1204.7,
+        "let_hosp": 4.46
+      },
+      "2021": {
+        "aih_qtd": 82822,
+        "aih_valor": 119224446.41,
+        "obitos_hosp": 4199,
+        "custo_aih": 1439.53,
+        "let_hosp": 5.07
+      },
+      "2022": {
+        "aih_qtd": 86831,
+        "aih_valor": 99162812.92,
+        "obitos_hosp": 3206,
+        "custo_aih": 1142.02,
+        "let_hosp": 3.69
+      },
+      "2023": {
+        "aih_qtd": 97521,
+        "aih_valor": 112708118.64,
+        "obitos_hosp": 3194,
+        "custo_aih": 1155.73,
+        "let_hosp": 3.28
+      },
+      "2024": {
+        "aih_qtd": 104677,
+        "aih_valor": 119115668.56,
+        "obitos_hosp": 3623,
+        "custo_aih": 1137.94,
+        "let_hosp": 3.46
+      },
+      "2025": {
+        "aih_qtd": 108668,
+        "aih_valor": 140448938.95,
+        "obitos_hosp": 3820,
+        "custo_aih": 1292.46,
+        "let_hosp": 3.52
+      }
+    },
+    "MA": {
+      "2020": {
+        "aih_qtd": 395228,
+        "aih_valor": 375770394.56,
+        "obitos_hosp": 14191,
+        "custo_aih": 950.77,
+        "let_hosp": 3.59
+      },
+      "2021": {
+        "aih_qtd": 449930,
+        "aih_valor": 510327392.27,
+        "obitos_hosp": 17189,
+        "custo_aih": 1134.24,
+        "let_hosp": 3.82
+      },
+      "2022": {
+        "aih_qtd": 482401,
+        "aih_valor": 452614641.24,
+        "obitos_hosp": 13824,
+        "custo_aih": 938.25,
+        "let_hosp": 2.87
+      },
+      "2023": {
+        "aih_qtd": 484348,
+        "aih_valor": 476787011.03,
+        "obitos_hosp": 13773,
+        "custo_aih": 984.39,
+        "let_hosp": 2.84
+      },
+      "2024": {
+        "aih_qtd": 500262,
+        "aih_valor": 531727218.43,
+        "obitos_hosp": 14533,
+        "custo_aih": 1062.9,
+        "let_hosp": 2.91
+      },
+      "2025": {
+        "aih_qtd": 500622,
+        "aih_valor": 562065330.9,
+        "obitos_hosp": 15010,
+        "custo_aih": 1122.73,
+        "let_hosp": 3.0
+      }
+    },
+    "PI": {
+      "2020": {
+        "aih_qtd": 181954,
+        "aih_valor": 216335315.95,
+        "obitos_hosp": 7268,
+        "custo_aih": 1188.96,
+        "let_hosp": 3.99
+      },
+      "2021": {
+        "aih_qtd": 209993,
+        "aih_valor": 301951412.58,
+        "obitos_hosp": 9966,
+        "custo_aih": 1437.91,
+        "let_hosp": 4.75
+      },
+      "2022": {
+        "aih_qtd": 214228,
+        "aih_valor": 246806470.42,
+        "obitos_hosp": 8139,
+        "custo_aih": 1152.07,
+        "let_hosp": 3.8
+      },
+      "2023": {
+        "aih_qtd": 225673,
+        "aih_valor": 267506223.12,
+        "obitos_hosp": 8239,
+        "custo_aih": 1185.37,
+        "let_hosp": 3.65
+      },
+      "2024": {
+        "aih_qtd": 219174,
+        "aih_valor": 273377721.38,
+        "obitos_hosp": 8399,
+        "custo_aih": 1247.31,
+        "let_hosp": 3.83
+      },
+      "2025": {
+        "aih_qtd": 222156,
+        "aih_valor": 280912186.39,
+        "obitos_hosp": 8083,
+        "custo_aih": 1264.48,
+        "let_hosp": 3.64
+      }
+    },
+    "CE": {
+      "2020": {
+        "aih_qtd": 457228,
+        "aih_valor": 636460960.19,
+        "obitos_hosp": 23468,
+        "custo_aih": 1392.0,
+        "let_hosp": 5.13
+      },
+      "2021": {
+        "aih_qtd": 511923,
+        "aih_valor": 877772133.47,
+        "obitos_hosp": 28864,
+        "custo_aih": 1714.66,
+        "let_hosp": 5.64
+      },
+      "2022": {
+        "aih_qtd": 529958,
+        "aih_valor": 726447120.85,
+        "obitos_hosp": 23892,
+        "custo_aih": 1370.76,
+        "let_hosp": 4.51
+      },
+      "2023": {
+        "aih_qtd": 558665,
+        "aih_valor": 764221989.46,
+        "obitos_hosp": 22560,
+        "custo_aih": 1367.94,
+        "let_hosp": 4.04
+      },
+      "2024": {
+        "aih_qtd": 587132,
+        "aih_valor": 848000030.77,
+        "obitos_hosp": 23819,
+        "custo_aih": 1444.31,
+        "let_hosp": 4.06
+      },
+      "2025": {
+        "aih_qtd": 596941,
+        "aih_valor": 930691759.87,
+        "obitos_hosp": 23583,
+        "custo_aih": 1559.1,
+        "let_hosp": 3.95
+      }
+    },
+    "RN": {
+      "2020": {
+        "aih_qtd": 166494,
+        "aih_valor": 283182041.94,
+        "obitos_hosp": 7862,
+        "custo_aih": 1700.85,
+        "let_hosp": 4.72
+      },
+      "2021": {
+        "aih_qtd": 178854,
+        "aih_valor": 365540119.44,
+        "obitos_hosp": 9655,
+        "custo_aih": 2043.79,
+        "let_hosp": 5.4
+      },
+      "2022": {
+        "aih_qtd": 187742,
+        "aih_valor": 323567694.11,
+        "obitos_hosp": 7683,
+        "custo_aih": 1723.47,
+        "let_hosp": 4.09
+      },
+      "2023": {
+        "aih_qtd": 206639,
+        "aih_valor": 343827226.71,
+        "obitos_hosp": 7301,
+        "custo_aih": 1663.9,
+        "let_hosp": 3.53
+      },
+      "2024": {
+        "aih_qtd": 216884,
+        "aih_valor": 390702556.81,
+        "obitos_hosp": 7965,
+        "custo_aih": 1801.44,
+        "let_hosp": 3.67
+      },
+      "2025": {
+        "aih_qtd": 225024,
+        "aih_valor": 432550679.47,
+        "obitos_hosp": 8292,
+        "custo_aih": 1922.24,
+        "let_hosp": 3.68
+      }
+    },
+    "PB": {
+      "2020": {
+        "aih_qtd": 159324,
+        "aih_valor": 227946551.21,
+        "obitos_hosp": 10284,
+        "custo_aih": 1430.71,
+        "let_hosp": 6.45
+      },
+      "2021": {
+        "aih_qtd": 182752,
+        "aih_valor": 320676396.1,
+        "obitos_hosp": 12941,
+        "custo_aih": 1754.71,
+        "let_hosp": 7.08
+      },
+      "2022": {
+        "aih_qtd": 202701,
+        "aih_valor": 284045342.24,
+        "obitos_hosp": 11025,
+        "custo_aih": 1401.3,
+        "let_hosp": 5.44
+      },
+      "2023": {
+        "aih_qtd": 229265,
+        "aih_valor": 333999072.26,
+        "obitos_hosp": 10637,
+        "custo_aih": 1456.83,
+        "let_hosp": 4.64
+      },
+      "2024": {
+        "aih_qtd": 260948,
+        "aih_valor": 552065026.72,
+        "obitos_hosp": 12663,
+        "custo_aih": 2115.61,
+        "let_hosp": 4.85
+      },
+      "2025": {
+        "aih_qtd": 257963,
+        "aih_valor": 547352778.02,
+        "obitos_hosp": 12985,
+        "custo_aih": 2121.83,
+        "let_hosp": 5.03
+      }
+    },
+    "PE": {
+      "2020": {
+        "aih_qtd": 490539,
+        "aih_valor": 815500708.8,
+        "obitos_hosp": 28092,
+        "custo_aih": 1662.46,
+        "let_hosp": 5.73
+      },
+      "2021": {
+        "aih_qtd": 557344,
+        "aih_valor": 1161810395.95,
+        "obitos_hosp": 34700,
+        "custo_aih": 2084.55,
+        "let_hosp": 6.23
+      },
+      "2022": {
+        "aih_qtd": 599329,
+        "aih_valor": 975545786.09,
+        "obitos_hosp": 28901,
+        "custo_aih": 1627.73,
+        "let_hosp": 4.82
+      },
+      "2023": {
+        "aih_qtd": 617948,
+        "aih_valor": 992106278.52,
+        "obitos_hosp": 26818,
+        "custo_aih": 1605.49,
+        "let_hosp": 4.34
+      },
+      "2024": {
+        "aih_qtd": 669715,
+        "aih_valor": 1128147241.58,
+        "obitos_hosp": 28237,
+        "custo_aih": 1684.52,
+        "let_hosp": 4.22
+      },
+      "2025": {
+        "aih_qtd": 671553,
+        "aih_valor": 1183658408.57,
+        "obitos_hosp": 28147,
+        "custo_aih": 1762.57,
+        "let_hosp": 4.19
+      }
+    },
+    "AL": {
+      "2020": {
+        "aih_qtd": 150607,
+        "aih_valor": 205569621.04,
+        "obitos_hosp": 7109,
+        "custo_aih": 1364.94,
+        "let_hosp": 4.72
+      },
+      "2021": {
+        "aih_qtd": 165407,
+        "aih_valor": 276880403.46,
+        "obitos_hosp": 9486,
+        "custo_aih": 1673.93,
+        "let_hosp": 5.73
+      },
+      "2022": {
+        "aih_qtd": 162290,
+        "aih_valor": 211609728.42,
+        "obitos_hosp": 6875,
+        "custo_aih": 1303.9,
+        "let_hosp": 4.24
+      },
+      "2023": {
+        "aih_qtd": 166471,
+        "aih_valor": 230291187.85,
+        "obitos_hosp": 7926,
+        "custo_aih": 1383.37,
+        "let_hosp": 4.76
+      },
+      "2024": {
+        "aih_qtd": 174394,
+        "aih_valor": 263311174.02,
+        "obitos_hosp": 7776,
+        "custo_aih": 1509.86,
+        "let_hosp": 4.46
+      },
+      "2025": {
+        "aih_qtd": 177100,
+        "aih_valor": 290058459.31,
+        "obitos_hosp": 8043,
+        "custo_aih": 1637.82,
+        "let_hosp": 4.54
+      }
+    },
+    "SE": {
+      "2020": {
+        "aih_qtd": 86664,
+        "aih_valor": 120241590.98,
+        "obitos_hosp": 5582,
+        "custo_aih": 1387.45,
+        "let_hosp": 6.44
+      },
+      "2021": {
+        "aih_qtd": 95533,
+        "aih_valor": 175749163.69,
+        "obitos_hosp": 6529,
+        "custo_aih": 1839.67,
+        "let_hosp": 6.83
+      },
+      "2022": {
+        "aih_qtd": 107788,
+        "aih_valor": 154389988.77,
+        "obitos_hosp": 5562,
+        "custo_aih": 1432.35,
+        "let_hosp": 5.16
+      },
+      "2023": {
+        "aih_qtd": 116500,
+        "aih_valor": 179123948.8,
+        "obitos_hosp": 5561,
+        "custo_aih": 1537.54,
+        "let_hosp": 4.77
+      },
+      "2024": {
+        "aih_qtd": 120489,
+        "aih_valor": 201013407.88,
+        "obitos_hosp": 5743,
+        "custo_aih": 1668.31,
+        "let_hosp": 4.77
+      },
+      "2025": {
+        "aih_qtd": 121921,
+        "aih_valor": 212204585.81,
+        "obitos_hosp": 5613,
+        "custo_aih": 1740.51,
+        "let_hosp": 4.6
+      }
+    },
+    "BA": {
+      "2020": {
+        "aih_qtd": 706950,
+        "aih_valor": 914530938.68,
+        "obitos_hosp": 34467,
+        "custo_aih": 1293.63,
+        "let_hosp": 4.88
+      },
+      "2021": {
+        "aih_qtd": 759427,
+        "aih_valor": 1243933168.52,
+        "obitos_hosp": 40048,
+        "custo_aih": 1637.99,
+        "let_hosp": 5.27
+      },
+      "2022": {
+        "aih_qtd": 835082,
+        "aih_valor": 1076518695.4,
+        "obitos_hosp": 34909,
+        "custo_aih": 1289.12,
+        "let_hosp": 4.18
+      },
+      "2023": {
+        "aih_qtd": 899347,
+        "aih_valor": 1172379800.75,
+        "obitos_hosp": 34536,
+        "custo_aih": 1303.59,
+        "let_hosp": 3.84
+      },
+      "2024": {
+        "aih_qtd": 946664,
+        "aih_valor": 1257032841.07,
+        "obitos_hosp": 36679,
+        "custo_aih": 1327.86,
+        "let_hosp": 3.87
+      },
+      "2025": {
+        "aih_qtd": 959307,
+        "aih_valor": 1360200380.73,
+        "obitos_hosp": 37342,
+        "custo_aih": 1417.9,
+        "let_hosp": 3.89
+      }
+    },
+    "MG": {
+      "2020": {
+        "aih_qtd": 1114593,
+        "aih_valor": 1900368797.53,
+        "obitos_hosp": 62201,
+        "custo_aih": 1704.99,
+        "let_hosp": 5.58
+      },
+      "2021": {
+        "aih_qtd": 1218746,
+        "aih_valor": 2647196263.51,
+        "obitos_hosp": 85748,
+        "custo_aih": 2172.07,
+        "let_hosp": 7.04
+      },
+      "2022": {
+        "aih_qtd": 1347584,
+        "aih_valor": 2326241465.13,
+        "obitos_hosp": 68460,
+        "custo_aih": 1726.23,
+        "let_hosp": 5.08
+      },
+      "2023": {
+        "aih_qtd": 1437650,
+        "aih_valor": 2525369524.15,
+        "obitos_hosp": 68682,
+        "custo_aih": 1756.6,
+        "let_hosp": 4.78
+      },
+      "2024": {
+        "aih_qtd": 1558079,
+        "aih_valor": 2896038794.22,
+        "obitos_hosp": 72514,
+        "custo_aih": 1858.72,
+        "let_hosp": 4.65
+      },
+      "2025": {
+        "aih_qtd": 1595623,
+        "aih_valor": 3301575183.89,
+        "obitos_hosp": 71498,
+        "custo_aih": 2069.14,
+        "let_hosp": 4.48
+      }
+    },
+    "ES": {
+      "2020": {
+        "aih_qtd": 224744,
+        "aih_valor": 364620052.22,
+        "obitos_hosp": 11732,
+        "custo_aih": 1622.38,
+        "let_hosp": 5.22
+      },
+      "2021": {
+        "aih_qtd": 265471,
+        "aih_valor": 553995355.04,
+        "obitos_hosp": 15357,
+        "custo_aih": 2086.84,
+        "let_hosp": 5.78
+      },
+      "2022": {
+        "aih_qtd": 264241,
+        "aih_valor": 434466475.93,
+        "obitos_hosp": 11331,
+        "custo_aih": 1644.21,
+        "let_hosp": 4.29
+      },
+      "2023": {
+        "aih_qtd": 288898,
+        "aih_valor": 483538289.4,
+        "obitos_hosp": 11658,
+        "custo_aih": 1673.73,
+        "let_hosp": 4.04
+      },
+      "2024": {
+        "aih_qtd": 307500,
+        "aih_valor": 533423013.03,
+        "obitos_hosp": 11968,
+        "custo_aih": 1734.71,
+        "let_hosp": 3.89
+      },
+      "2025": {
+        "aih_qtd": 317414,
+        "aih_valor": 562868358.71,
+        "obitos_hosp": 12320,
+        "custo_aih": 1773.29,
+        "let_hosp": 3.88
+      }
+    },
+    "RJ": {
+      "2020": {
+        "aih_qtd": 677452,
+        "aih_valor": 1032894622.93,
+        "obitos_hosp": 58526,
+        "custo_aih": 1524.68,
+        "let_hosp": 8.64
+      },
+      "2021": {
+        "aih_qtd": 751937,
+        "aih_valor": 1414089345.89,
+        "obitos_hosp": 71619,
+        "custo_aih": 1880.6,
+        "let_hosp": 9.52
+      },
+      "2022": {
+        "aih_qtd": 802671,
+        "aih_valor": 1285136616.87,
+        "obitos_hosp": 58797,
+        "custo_aih": 1601.08,
+        "let_hosp": 7.33
+      },
+      "2023": {
+        "aih_qtd": 889194,
+        "aih_valor": 1449882881.1,
+        "obitos_hosp": 57181,
+        "custo_aih": 1630.56,
+        "let_hosp": 6.43
+      },
+      "2024": {
+        "aih_qtd": 902729,
+        "aih_valor": 1611113131.61,
+        "obitos_hosp": 56472,
+        "custo_aih": 1784.71,
+        "let_hosp": 6.26
+      },
+      "2025": {
+        "aih_qtd": 921956,
+        "aih_valor": 1706652787.6,
+        "obitos_hosp": 58995,
+        "custo_aih": 1851.12,
+        "let_hosp": 6.4
+      }
+    },
+    "SP": {
+      "2020": {
+        "aih_qtd": 2264895,
+        "aih_valor": 3806208857.72,
+        "obitos_hosp": 145080,
+        "custo_aih": 1680.52,
+        "let_hosp": 6.41
+      },
+      "2021": {
+        "aih_qtd": 2376690,
+        "aih_valor": 5067663860.97,
+        "obitos_hosp": 183181,
+        "custo_aih": 2132.24,
+        "let_hosp": 7.71
+      },
+      "2022": {
+        "aih_qtd": 2536219,
+        "aih_valor": 4191063070.14,
+        "obitos_hosp": 141376,
+        "custo_aih": 1652.48,
+        "let_hosp": 5.57
+      },
+      "2023": {
+        "aih_qtd": 2674138,
+        "aih_valor": 4497990535.27,
+        "obitos_hosp": 137800,
+        "custo_aih": 1682.03,
+        "let_hosp": 5.15
+      },
+      "2024": {
+        "aih_qtd": 2855539,
+        "aih_valor": 5124421246.29,
+        "obitos_hosp": 147924,
+        "custo_aih": 1794.55,
+        "let_hosp": 5.18
+      },
+      "2025": {
+        "aih_qtd": 2947601,
+        "aih_valor": 5547220325.36,
+        "obitos_hosp": 147878,
+        "custo_aih": 1881.94,
+        "let_hosp": 5.02
+      }
+    },
+    "PR": {
+      "2020": {
+        "aih_qtd": 750892,
+        "aih_valor": 1406028330.2,
+        "obitos_hosp": 37413,
+        "custo_aih": 1872.48,
+        "let_hosp": 4.98
+      },
+      "2021": {
+        "aih_qtd": 780744,
+        "aih_valor": 1868090404.3,
+        "obitos_hosp": 54945,
+        "custo_aih": 2392.71,
+        "let_hosp": 7.04
+      },
+      "2022": {
+        "aih_qtd": 877668,
+        "aih_valor": 1662024377.75,
+        "obitos_hosp": 41225,
+        "custo_aih": 1893.68,
+        "let_hosp": 4.7
+      },
+      "2023": {
+        "aih_qtd": 944137,
+        "aih_valor": 1789872830.95,
+        "obitos_hosp": 39061,
+        "custo_aih": 1895.78,
+        "let_hosp": 4.14
+      },
+      "2024": {
+        "aih_qtd": 1037901,
+        "aih_valor": 2020171994.76,
+        "obitos_hosp": 42435,
+        "custo_aih": 1946.4,
+        "let_hosp": 4.09
+      },
+      "2025": {
+        "aih_qtd": 1100341,
+        "aih_valor": 2220735443.51,
+        "obitos_hosp": 41954,
+        "custo_aih": 2018.22,
+        "let_hosp": 3.81
+      }
+    },
+    "SC": {
+      "2020": {
+        "aih_qtd": 425573,
+        "aih_valor": 758021988.83,
+        "obitos_hosp": 22014,
+        "custo_aih": 1781.18,
+        "let_hosp": 5.17
+      },
+      "2021": {
+        "aih_qtd": 468806,
+        "aih_valor": 1086773153.73,
+        "obitos_hosp": 31599,
+        "custo_aih": 2318.17,
+        "let_hosp": 6.74
+      },
+      "2022": {
+        "aih_qtd": 533397,
+        "aih_valor": 939515058.67,
+        "obitos_hosp": 25026,
+        "custo_aih": 1761.38,
+        "let_hosp": 4.69
+      },
+      "2023": {
+        "aih_qtd": 583792,
+        "aih_valor": 1044458674.77,
+        "obitos_hosp": 23695,
+        "custo_aih": 1789.09,
+        "let_hosp": 4.06
+      },
+      "2024": {
+        "aih_qtd": 650168,
+        "aih_valor": 1497687467.75,
+        "obitos_hosp": 25863,
+        "custo_aih": 2303.54,
+        "let_hosp": 3.98
+      },
+      "2025": {
+        "aih_qtd": 690880,
+        "aih_valor": 1536256394.21,
+        "obitos_hosp": 26338,
+        "custo_aih": 2223.62,
+        "let_hosp": 3.81
+      }
+    },
+    "RS": {
+      "2020": {
+        "aih_qtd": 675603,
+        "aih_valor": 1186666108.7,
+        "obitos_hosp": 41623,
+        "custo_aih": 1756.45,
+        "let_hosp": 6.16
+      },
+      "2021": {
+        "aih_qtd": 709893,
+        "aih_valor": 1567348049.4,
+        "obitos_hosp": 56380,
+        "custo_aih": 2207.87,
+        "let_hosp": 7.94
+      },
+      "2022": {
+        "aih_qtd": 777938,
+        "aih_valor": 1298261973.29,
+        "obitos_hosp": 46221,
+        "custo_aih": 1668.85,
+        "let_hosp": 5.94
+      },
+      "2023": {
+        "aih_qtd": 804504,
+        "aih_valor": 1361292836.74,
+        "obitos_hosp": 42091,
+        "custo_aih": 1692.09,
+        "let_hosp": 5.23
+      },
+      "2024": {
+        "aih_qtd": 831884,
+        "aih_valor": 1497334255.7,
+        "obitos_hosp": 45390,
+        "custo_aih": 1799.93,
+        "let_hosp": 5.46
+      },
+      "2025": {
+        "aih_qtd": 862087,
+        "aih_valor": 1686842022.07,
+        "obitos_hosp": 44872,
+        "custo_aih": 1956.7,
+        "let_hosp": 5.21
+      }
+    },
+    "MS": {
+      "2020": {
+        "aih_qtd": 155306,
+        "aih_valor": 227384589.28,
+        "obitos_hosp": 7710,
+        "custo_aih": 1464.11,
+        "let_hosp": 4.96
+      },
+      "2021": {
+        "aih_qtd": 165455,
+        "aih_valor": 337069397.8,
+        "obitos_hosp": 11721,
+        "custo_aih": 2037.23,
+        "let_hosp": 7.08
+      },
+      "2022": {
+        "aih_qtd": 193518,
+        "aih_valor": 285832542.7,
+        "obitos_hosp": 8819,
+        "custo_aih": 1477.03,
+        "let_hosp": 4.56
+      },
+      "2023": {
+        "aih_qtd": 210717,
+        "aih_valor": 320851216.53,
+        "obitos_hosp": 8679,
+        "custo_aih": 1522.66,
+        "let_hosp": 4.12
+      },
+      "2024": {
+        "aih_qtd": 214811,
+        "aih_valor": 329824342.03,
+        "obitos_hosp": 8900,
+        "custo_aih": 1535.42,
+        "let_hosp": 4.14
+      },
+      "2025": {
+        "aih_qtd": 212629,
+        "aih_valor": 339489876.15,
+        "obitos_hosp": 8852,
+        "custo_aih": 1596.63,
+        "let_hosp": 4.16
+      }
+    },
+    "MT": {
+      "2020": {
+        "aih_qtd": 169366,
+        "aih_valor": 205331624.93,
+        "obitos_hosp": 7670,
+        "custo_aih": 1212.35,
+        "let_hosp": 4.53
+      },
+      "2021": {
+        "aih_qtd": 191669,
+        "aih_valor": 336549602.1,
+        "obitos_hosp": 11203,
+        "custo_aih": 1755.89,
+        "let_hosp": 5.84
+      },
+      "2022": {
+        "aih_qtd": 208412,
+        "aih_valor": 241225841.08,
+        "obitos_hosp": 6797,
+        "custo_aih": 1157.45,
+        "let_hosp": 3.26
+      },
+      "2023": {
+        "aih_qtd": 226565,
+        "aih_valor": 267074116.92,
+        "obitos_hosp": 6979,
+        "custo_aih": 1178.8,
+        "let_hosp": 3.08
+      },
+      "2024": {
+        "aih_qtd": 248618,
+        "aih_valor": 318335710.35,
+        "obitos_hosp": 7992,
+        "custo_aih": 1280.42,
+        "let_hosp": 3.21
+      },
+      "2025": {
+        "aih_qtd": 259695,
+        "aih_valor": 346692664.9,
+        "obitos_hosp": 8381,
+        "custo_aih": 1335.0,
+        "let_hosp": 3.23
+      }
+    },
+    "GO": {
+      "2020": {
+        "aih_qtd": 311548,
+        "aih_valor": 471891376.35,
+        "obitos_hosp": 15207,
+        "custo_aih": 1514.67,
+        "let_hosp": 4.88
+      },
+      "2021": {
+        "aih_qtd": 343686,
+        "aih_valor": 697234869.6,
+        "obitos_hosp": 21826,
+        "custo_aih": 2028.7,
+        "let_hosp": 6.35
+      },
+      "2022": {
+        "aih_qtd": 369947,
+        "aih_valor": 517119906.99,
+        "obitos_hosp": 16009,
+        "custo_aih": 1397.82,
+        "let_hosp": 4.33
+      },
+      "2023": {
+        "aih_qtd": 423932,
+        "aih_valor": 583905537.09,
+        "obitos_hosp": 15304,
+        "custo_aih": 1377.36,
+        "let_hosp": 3.61
+      },
+      "2024": {
+        "aih_qtd": 452002,
+        "aih_valor": 652992168.71,
+        "obitos_hosp": 15920,
+        "custo_aih": 1444.67,
+        "let_hosp": 3.52
+      },
+      "2025": {
+        "aih_qtd": 465573,
+        "aih_valor": 743351341.46,
+        "obitos_hosp": 16453,
+        "custo_aih": 1596.64,
+        "let_hosp": 3.53
+      }
+    },
+    "DF": {
+      "2020": {
+        "aih_qtd": 213478,
+        "aih_valor": 265391022.65,
+        "obitos_hosp": 8248,
+        "custo_aih": 1243.18,
+        "let_hosp": 3.86
+      },
+      "2021": {
+        "aih_qtd": 230888,
+        "aih_valor": 338257487.5,
+        "obitos_hosp": 9967,
+        "custo_aih": 1465.03,
+        "let_hosp": 4.32
+      },
+      "2022": {
+        "aih_qtd": 232063,
+        "aih_valor": 312758824.5,
+        "obitos_hosp": 7130,
+        "custo_aih": 1347.73,
+        "let_hosp": 3.07
+      },
+      "2023": {
+        "aih_qtd": 237382,
+        "aih_valor": 345835763.21,
+        "obitos_hosp": 6963,
+        "custo_aih": 1456.87,
+        "let_hosp": 2.93
+      },
+      "2024": {
+        "aih_qtd": 248088,
+        "aih_valor": 391078924.26,
+        "obitos_hosp": 7179,
+        "custo_aih": 1576.37,
+        "let_hosp": 2.89
+      },
+      "2025": {
+        "aih_qtd": 248744,
+        "aih_valor": 422873992.71,
+        "obitos_hosp": 7066,
+        "custo_aih": 1700.04,
+        "let_hosp": 2.84
+      }
+    }
+  }
+}
