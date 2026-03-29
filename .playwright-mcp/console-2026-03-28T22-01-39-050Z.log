@@ -1,0 +1,7 @@
+[     623ms] Invalid or unexpected token
+[     786ms] Unexpected token ')'
+[     790ms] ReferenceError: smGetFiltered is not defined
+    at http://localhost:8777/index.html:6579:26
+[     850ms] Unexpected string
+[     854ms] Unexpected identifier 'rgba'
+[     962ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8777/favicon.ico:0

@@ -1,0 +1,7 @@
+[     440ms] Unexpected token ')'
+[     533ms] Unexpected identifier 'rgba'
+[     854ms] TypeError: Cannot read properties of undefined (reading 'width')
+    at Chart._draw (http://localhost:8777/index.html:5195:279)
+    at new Chart (http://localhost:8777/index.html:5195:140)
+    at sihInitCharts (http://localhost:8777/index.html:7200:24)
+    at initGH (http://localhost:8777/index.html:7560:3)

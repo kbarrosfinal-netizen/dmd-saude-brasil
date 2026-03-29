@@ -1,0 +1,22 @@
+[     386ms] Invalid or unexpected token
+[     525ms] Unexpected token ')'
+[     526ms] ReferenceError: smGetFiltered is not defined
+    at http://localhost:8777/index.html:6579:26
+[     629ms] Unexpected identifier 'rgba'
+[    7736ms] TypeError: Cannot read properties of undefined (reading 'width')
+    at Chart._draw (http://localhost:8777/index.html:5194:279)
+    at new Chart (http://localhost:8777/index.html:5194:140)
+    at initSeriesEstadual (http://localhost:8777/index.html:10954:33)
+    at seriesTab (http://localhost:8777/index.html:10933:18)
+    at initSeries (http://localhost:8777/index.html:10919:3)
+    at http://localhost:8777/index.html:5109:89
+[   62956ms] ReferenceError: smAllMunis is not defined
+    at alertaGetAll (http://localhost:8777/index.html:6896:3)
+    at alertaGetFiltered (http://localhost:8777/index.html:6908:13)
+    at alertaRender (http://localhost:8777/index.html:6945:18)
+    at initSMAlertas (http://localhost:8777/index.html:7054:3)
+    at http://localhost:8777/index.html:16235:67
+[   63000ms] TypeError: shChart.destroy is not a function
+    at shRebuildChart (http://localhost:8777/index.html:6400:24)
+    at initSMHistorico (http://localhost:8777/index.html:6486:3)
+    at http://localhost:8777/index.html:16236:69

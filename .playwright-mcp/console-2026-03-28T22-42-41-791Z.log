@@ -1,0 +1,5 @@
+[     387ms] Invalid or unexpected token
+[     503ms] Unexpected token ')'
+[     507ms] ReferenceError: smGetFiltered is not defined
+    at http://localhost:8777/index.html:6579:26
+[     600ms] Unexpected identifier 'rgba'

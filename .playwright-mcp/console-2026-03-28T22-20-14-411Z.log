@@ -1,0 +1,8 @@
+[     555ms] Invalid or unexpected token
+[     642ms] Unexpected token ')'
+[     647ms] ReferenceError: smGetFiltered is not defined
+    at http://localhost:8777/index.html:6579:26
+[     713ms] ReferenceError: PROJECAO_PARAMS is not defined
+    at http://localhost:8777/index.html:13132:24
+    at http://localhost:8777/index.html:13140:3
+[     716ms] Unexpected identifier 'rgba'

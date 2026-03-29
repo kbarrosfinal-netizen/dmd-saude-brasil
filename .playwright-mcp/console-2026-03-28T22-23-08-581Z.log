@@ -1,0 +1,16 @@
+[     590ms] Invalid or unexpected token
+[     717ms] Unexpected token ')'
+[     721ms] ReferenceError: smGetFiltered is not defined
+    at http://localhost:8777/index.html:6579:26
+[     842ms] Unexpected identifier 'rgba'
+[   33818ms] TypeError: Cannot read properties of undefined (reading 'width')
+    at Chart._draw (http://localhost:8777/index.html:5194:279)
+    at new Chart (http://localhost:8777/index.html:5194:140)
+    at initSeriesEstadual (http://localhost:8777/index.html:10954:33)
+    at seriesTab (http://localhost:8777/index.html:10933:18)
+    at initSeries (http://localhost:8777/index.html:10919:3)
+    at switchMod (http://localhost:8777/index.html:5109:64)
+    at HTMLButtonElement.onclick (http://localhost:8777/index.html:1464:97)
+    at eval (eval at evaluate (:301:30), <anonymous>:1:59)
+    at UtilityScript.evaluate (<anonymous>:303:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)

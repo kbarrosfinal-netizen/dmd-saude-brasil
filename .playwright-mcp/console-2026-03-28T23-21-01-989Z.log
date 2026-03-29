@@ -1,0 +1,11 @@
+[     519ms] Unexpected token ')'
+[     605ms] Unexpected identifier 'rgba'
+[     936ms] TypeError: Cannot read properties of undefined (reading 'width')
+    at Chart._draw (http://localhost:8777/index.html:5195:279)
+    at new Chart (http://localhost:8777/index.html:5195:140)
+    at sihInitCharts (http://localhost:8777/index.html:7200:24)
+    at initGH (http://localhost:8777/index.html:7560:3)
+[   29897ms] TypeError: shChart.destroy is not a function
+    at shRebuildChart (http://localhost:8777/index.html:6401:24)
+    at initSMHistorico (http://localhost:8777/index.html:6487:3)
+    at http://localhost:8777/index.html:16237:69
