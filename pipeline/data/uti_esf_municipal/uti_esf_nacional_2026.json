@@ -1,0 +1,10 @@
+{
+  "fonte": "CNES/DATASUS + e-Gestor AB — Ministério da Saúde",
+  "auditavel_em": [
+    "http://tabnet.datasus.gov.br/cgi/deftohtm.exe?cnes/cnv/leit{UF}.def",
+    "http://tabnet.datasus.gov.br/cgi/deftohtm.exe?esf/cnv/esf{UF}.def"
+  ],
+  "coletado_em": "2026-03-30T10:34:18.023493",
+  "total_municipios": 0,
+  "municipios": {}
+}
