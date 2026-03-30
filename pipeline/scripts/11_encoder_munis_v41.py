@@ -38,6 +38,10 @@ CAMPOS_NOVOS = [
     'producao_aih_ano', 'receita_sus_ano', 'receita_per_capita',
     'custo_medio_aih', 'obitos_hosp', 'letalidade_hosp_pct',
     'nascimentos_nv', 'tmi_real',
+    # P2 — campos adicionais V41.1
+    'glosa_pct', 'glosa_valor', 'producao_amb_ano', 'leitos_obst',
+    'prematuros_pct', 'cesareas_pct', 'mort_hospitalar_pct',
+    'tmp_medio', 'ocupacao_leitos_pct', 'investimento_necessario',
 ]
 
 # Campos que devem SEMPRE ser atualizados (dado mais recente)
@@ -45,6 +49,8 @@ CAMPOS_SEMPRE_ATUALIZAR = {
     'producao_aih_ano', 'receita_sus_ano', 'receita_per_capita',
     'custo_medio_aih', 'obitos_hosp', 'letalidade_hosp_pct',
     'nascimentos_nv', 'tmi_real',
+    'glosa_pct', 'glosa_valor', 'producao_amb_ano', 'mort_hospitalar_pct',
+    'tmp_medio', 'ocupacao_leitos_pct', 'investimento_necessario',
 }
 
 
