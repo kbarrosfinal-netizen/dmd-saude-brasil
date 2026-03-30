@@ -47,6 +47,8 @@ CAMPOS_NOVOS = [
     'leitos_uti', 'densidade_pop', 'criticidade_geral', 'nivel_criticidade',
     'acao_prioritaria', 'estab_total', 'hospitais_count', 'ubs_count',
     'upa_spa_count', 'policlinicas_count', 'prof_total',
+    # Proxy regulação (calibrado SISREG AM)
+    'fila_estimada', 'tempo_espera_estimado',
 ]
 
 # Campos que devem SEMPRE ser atualizados (dado mais recente)
@@ -60,6 +62,7 @@ CAMPOS_SEMPRE_ATUALIZAR = {
     'leitos_uti', 'criticidade_geral', 'nivel_criticidade', 'acao_prioritaria',
     'estab_total', 'hospitais_count', 'ubs_count', 'upa_spa_count',
     'policlinicas_count', 'prof_total',
+    'fila_estimada', 'tempo_espera_estimado',
 }
 
 
