@@ -1,13 +1,13 @@
 name: "🚀 Deploy GitHub Pages — DMD Dashboard"
 
-# Deploy separado: ativado em push ao main OU manualmente
+# Deploy: ativado em push ao main (qualquer alteração no index.html) OU manualmente
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
+      - "index.html"
       - "pipeline/pages/**"
-      - "pipeline/data/dashboard_data.json"
 
 permissions:
   contents: read
@@ -29,22 +29,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verificar dashboard
+      - name: Preparar deploy
         run: |
-          if [ ! -f "pipeline/pages/index.html" ]; then
-            echo "⚠️ index.html não encontrado — gerando versão de emergência"
-            mkdir -p pipeline/pages
-            cat > pipeline/pages/index.html << 'HTMLEOF'
-          <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
-          <meta http-equiv="refresh" content="0; url=https://www.genspark.ai/api/files/s/jqARQ5p4"/>
-          <title>EMET DMD Gestão Brasil</title></head>
-          <body><p>Redirecionando para o dashboard...</p>
-          <a href="https://www.genspark.ai/api/files/s/jqARQ5p4">Clique aqui se não redirecionar</a>
-          </body></html>
-          HTMLEOF
-          else
-            echo "✅ index.html encontrado: $(stat -c%s pipeline/pages/index.html) bytes"
-          fi
+          mkdir -p _site
+          cp index.html _site/index.html
+          cp .nojekyll _site/.nojekyll 2>/dev/null || touch _site/.nojekyll
+          echo "Dashboard copiado para deploy"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -52,7 +42,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: pipeline/pages/
+          path: _site/
 
       - name: Deploy to GitHub Pages
         id: deployment
