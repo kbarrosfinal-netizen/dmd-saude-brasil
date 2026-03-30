@@ -42,6 +42,11 @@ CAMPOS_NOVOS = [
     'glosa_pct', 'glosa_valor', 'producao_amb_ano', 'leitos_obst',
     'prematuros_pct', 'cesareas_pct', 'mort_hospitalar_pct',
     'tmp_medio', 'ocupacao_leitos_pct', 'investimento_necessario',
+    # Paridade AM — campos derivados + CNES
+    'deficit_leitos_abs', 'deficit_uti_abs', 'uti_necessario', 'uti_1k',
+    'leitos_uti', 'densidade_pop', 'criticidade_geral', 'nivel_criticidade',
+    'acao_prioritaria', 'estab_total', 'hospitais_count', 'ubs_count',
+    'upa_spa_count', 'policlinicas_count', 'prof_total',
 ]
 
 # Campos que devem SEMPRE ser atualizados (dado mais recente)
@@ -51,6 +56,10 @@ CAMPOS_SEMPRE_ATUALIZAR = {
     'nascimentos_nv', 'tmi_real',
     'glosa_pct', 'glosa_valor', 'producao_amb_ano', 'mort_hospitalar_pct',
     'tmp_medio', 'ocupacao_leitos_pct', 'investimento_necessario',
+    'deficit_leitos_abs', 'deficit_uti_abs', 'uti_necessario', 'uti_1k',
+    'leitos_uti', 'criticidade_geral', 'nivel_criticidade', 'acao_prioritaria',
+    'estab_total', 'hospitais_count', 'ubs_count', 'upa_spa_count',
+    'policlinicas_count', 'prof_total',
 }
 
 
