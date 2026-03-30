@@ -1,0 +1,33 @@
+{
+    "versao": "3.0",
+    "competencia": "03/2026",
+    "uf": "DF",
+    "gerado_em": "2026-03-30T10:09:33.100546",
+    "gerado_por": "12_gerador_patches_v3.py",
+    "banco_base": "dmd_banco_v41_integrado.csv",
+    "total_municipios": 1,
+    "total_reais": 0,
+    "total_estimados": 1,
+    "total_substituiveis": 1,
+    "total_orfaos": 0,
+    "municipios": [
+        {
+            "m": "Brasília",
+            "ibge": "5300108",
+            "pop": 2996899,
+            "caps": 18,
+            "caps_tipo": "CAPS I, CAPS II, CAPSad, CAPSi, CAPSad III, CAPS III",
+            "srt": 8,
+            "psiq_cad": 244,
+            "psiq_hab": 244,
+            "leitos_sus": 9680,
+            "uti": 2038,
+            "esf_pct": 0.8,
+            "lq": 0.83,
+            "def_psiq": 0,
+            "alerta_fiscal": false,
+            "vacuo_hab": false,
+            "fonte_sm": "ESTIMATIVA_V41_Mar2026 (uti=calc, esf=estim)"
+        }
+    ]
+}
