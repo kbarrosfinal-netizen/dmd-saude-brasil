@@ -1,0 +1,24 @@
+{
+  "name": "dmd-saude-brasil",
+  "version": "1.0.0",
+  "description": "Dashboard de inteligência de dados para gestão da saúde pública brasileira. Cobertura: 5.569 municípios, 27 unidades federativas, 115 indicadores por município.",
+  "main": "CONSOLE_SCRIPT_FINAL.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kbarrosfinal-netizen/dmd-saude-brasil.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kbarrosfinal-netizen/dmd-saude-brasil/issues"
+  },
+  "homepage": "https://github.com/kbarrosfinal-netizen/dmd-saude-brasil#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}
