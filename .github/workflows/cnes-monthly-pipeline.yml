@@ -68,8 +68,8 @@ jobs:
         id: patch
         env:
           COMP: ${{ steps.comp.outputs.competencia }}
+          PATCH_FILE: cnes_data/cnes_patch_${{ steps.comp.outputs.competencia }}.json
         run: |
-          PATCH_FILE="cnes_data/cnes_patch_${COMP}.json"
           if [ -f "$PATCH_FILE" ]; then
             echo "Patch encontrado: $PATCH_FILE"
             echo "patch_file=$PATCH_FILE" >> "$GITHUB_OUTPUT"
@@ -85,8 +85,6 @@ jobs:
             echo "patch_exists=false" >> "$GITHUB_OUTPUT"
             exit 1
           fi
-        env:
-          PATCH_FILE: cnes_data/cnes_patch_${{ steps.comp.outputs.competencia }}.json
 
       - name: Carregar patch no Supabase
         if: steps.patch.outputs.patch_exists == 'true'
