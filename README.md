@@ -54,7 +54,44 @@ dmd-saude-brasil/
 └── README.md
 ```
 
-## Licença
+## Banco de Dados PostgreSQL (Supabase)
+
+O DMD Saude Brasil conta com banco PostgreSQL hospedado no Supabase para consultas estruturadas e integracao com APIs.
+
+### Configuracao
+
+```bash
+export SUPABASE_HOST="db.xxckbdilszvfmzyoquze.supabase.co"
+export SUPABASE_PORT="5432"
+export SUPABASE_DB="postgres"
+export SUPABASE_USER="postgres"
+export SUPABASE_PASSWORD="[SENHA]"
+```
+
+### Pipeline mensal
+
+```bash
+# 1. Coletar dados CNES (dia 16/mes)
+python cnes_scraper.py --competencia 032026
+
+# 2. Carregar no banco
+python load_patch_to_supabase.py --patch cnes_data/cnes_patch_032026.json
+
+# 3. Atualizar series temporais
+python update_series_cnes.py --competencia 03/2026
+
+# 4. Verificar
+python check_supabase.py
+```
+
+### Estrutura do banco
+
+- 26 tabelas | 5 triggers | 48 indices
+- 5.525 municipios | 27 UFs | 16 fontes federais
+- Triggers automaticos: calculo leitos/1k, alertas saude mental
+- Tabelas: municipios, leitos, atencao_primaria, saude_mental, scores_municipio, epidemiologia, producao_hospitalar, orcamento_saude, series_cnes, alertas, estabelecimentos, profissionais_saude, am_* (piloto Amazonas)
+
+## Licenca
 
 Todos os direitos reservados. EMET Gestão Brasil Ltda.
 Dados de fontes públicas federais — uso permitido para gestão pública e análise de políticas de saúde.
