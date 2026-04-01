@@ -1,0 +1,138 @@
+name: DMD Saude Brasil — Pipeline Mensal CNES
+
+on:
+  schedule:
+    - cron: '0 12 16 * *'
+  workflow_dispatch:
+    inputs:
+      competencia:
+        description: 'Competencia MMAAAA (ex: 032026). Vazio = mes anterior.'
+        required: false
+        default: ''
+
+env:
+  SUPABASE_HOST: ${{ secrets.SUPABASE_HOST }}
+  SUPABASE_PORT: '5432'
+  SUPABASE_DB: 'postgres'
+  SUPABASE_USER: 'postgres'
+  SUPABASE_PASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
+
+jobs:
+  pipeline-cnes:
+    name: Coleta CNES + Ingestao Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests beautifulsoup4 pandas psycopg2-binary
+
+      - name: Calcular competencia
+        id: comp
+        env:
+          INPUT_COMP: ${{ github.event.inputs.competencia }}
+        run: |
+          python3 << 'EOF'
+          import os, datetime
+          manual = os.environ.get("INPUT_COMP", "")
+          if manual:
+              comp = manual
+          else:
+              hoje = datetime.date.today()
+              mes_ant = hoje.replace(day=1) - datetime.timedelta(days=1)
+              comp = mes_ant.strftime('%m%Y')
+          ref = f"{comp[:2]}/{comp[2:]}"
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"competencia={comp}\n")
+              f.write(f"referencia={ref}\n")
+          print(f"Competencia: {comp} ({ref})")
+          EOF
+
+      - name: Executar cnes_scraper.py
+        env:
+          COMP: ${{ steps.comp.outputs.competencia }}
+        run: |
+          echo "Coletando dados CNES para $COMP..."
+          python cnes_scraper.py --competencia "$COMP"
+        continue-on-error: false
+
+      - name: Verificar patch JSON
+        id: patch
+        env:
+          COMP: ${{ steps.comp.outputs.competencia }}
+        run: |
+          PATCH_FILE="cnes_data/cnes_patch_${COMP}.json"
+          if [ -f "$PATCH_FILE" ]; then
+            echo "Patch encontrado: $PATCH_FILE"
+            echo "patch_file=$PATCH_FILE" >> "$GITHUB_OUTPUT"
+            echo "patch_exists=true" >> "$GITHUB_OUTPUT"
+            python3 -c "
+          import json, os
+          with open(os.environ['PATCH_FILE']) as f: p = json.load(f)
+          print(f'  Municipios: {p[\"total_municipios\"]}')
+          print(f'  CAPS: {p[\"total_caps\"]}')
+          "
+          else
+            echo "Patch nao encontrado: $PATCH_FILE"
+            echo "patch_exists=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+        env:
+          PATCH_FILE: cnes_data/cnes_patch_${{ steps.comp.outputs.competencia }}.json
+
+      - name: Carregar patch no Supabase
+        if: steps.patch.outputs.patch_exists == 'true'
+        env:
+          PATCH_FILE: ${{ steps.patch.outputs.patch_file }}
+        run: |
+          echo "Carregando dados no Supabase..."
+          python load_patch_to_supabase.py --patch "$PATCH_FILE"
+
+      - name: Atualizar series CNES
+        if: steps.patch.outputs.patch_exists == 'true'
+        env:
+          REF: ${{ steps.comp.outputs.referencia }}
+        run: |
+          echo "Atualizando series temporais..."
+          python update_series_cnes.py --competencia "$REF"
+
+      - name: Verificar saude do banco
+        run: python check_supabase.py 2>&1 | tee check_output.txt
+
+      - name: Salvar artefatos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cnes-pipeline-${{ steps.comp.outputs.competencia }}
+          path: |
+            cnes_data/cnes_patch_${{ steps.comp.outputs.competencia }}.json
+            cnes_data/cnes_auditoria_${{ steps.comp.outputs.competencia }}.csv
+            check_output.txt
+          retention-days: 90
+
+      - name: Publicar resumo
+        if: always()
+        env:
+          REF: ${{ steps.comp.outputs.referencia }}
+          PATCH_EXISTS: ${{ steps.patch.outputs.patch_exists }}
+        run: |
+          echo "## DMD Pipeline CNES — $REF" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Item | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Competencia | $REF |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Patch gerado | $PATCH_EXISTS |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f check_output.txt ]; then
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            cat check_output.txt >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
