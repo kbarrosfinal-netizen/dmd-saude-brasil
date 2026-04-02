@@ -62,10 +62,25 @@ def build_payload(uf_cod, tipo_cod):
 
 def parse_tabnet(html, uf, tipo):
     res = []
+    # Padrao 1: codigo IBGE 6 digitos + nome + quantidade
     for i6, nome, cnt in re.findall(r'<td[^>]*>(\d{6})\s+([^<]+)</td>\s*<td[^>]*>(\d+)</td>', html, re.I):
         res.append({"ibge6":i6.strip(),"nome_tabnet":nome.strip(),"count":int(cnt),"tipo":tipo,"uf":uf})
-    if not res:
-        for nome, cnt in re.findall(r'<td[^>]*class="[^"]*linha[^"]*"[^>]*>([^<]{3,50})</td>\s*<td[^>]*>(\d+)</td>', html, re.I):
+    if res: return res
+    # Padrao 2: codigo IBGE 7 digitos + nome + quantidade
+    for i7, nome, cnt in re.findall(r'<td[^>]*>(\d{7})\s+([^<]+)</td>\s*<td[^>]*>(\d+)</td>', html, re.I):
+        res.append({"ibge6":i7[:6].strip(),"nome_tabnet":nome.strip(),"count":int(cnt),"tipo":tipo,"uf":uf})
+    if res: return res
+    # Padrao 3: nome em td com classe "linha" + quantidade
+    for nome, cnt in re.findall(r'<td[^>]*class="[^"]*linha[^"]*"[^>]*>([^<]{3,50})</td>\s*<td[^>]*>(\d+)</td>', html, re.I):
+        res.append({"ibge6":"","nome_tabnet":nome.strip(),"count":int(cnt),"tipo":tipo,"uf":uf})
+    if res: return res
+    # Padrao 4: qualquer td com 6+ digitos seguido de texto e td com numero
+    for i6, nome, cnt in re.findall(r'<td[^>]*>\s*(\d{6,7})\s*[-\s]+([^<]+?)\s*</td>\s*<td[^>]*>\s*(\d+)\s*</td>', html, re.I):
+        res.append({"ibge6":i6[:6].strip(),"nome_tabnet":nome.strip(),"count":int(cnt),"tipo":tipo,"uf":uf})
+    if res: return res
+    # Padrao 5: nome sem codigo + quantidade (ultima tentativa)
+    for nome, cnt in re.findall(r'<td[^>]*>\s*([A-ZÀ-Ú][^<]{2,49}?)\s*</td>\s*<td[^>]*>\s*(\d+)\s*</td>', html, re.I):
+        if nome.strip() and not nome.strip().startswith('Total'):
             res.append({"ibge6":"","nome_tabnet":nome.strip(),"count":int(cnt),"tipo":tipo,"uf":uf})
     return res
 
@@ -78,7 +93,13 @@ def fetch_tipo(uf, tipo_cod):
                      "Referer":"http://tabnet.datasus.gov.br/cgi/deftohtm.exe?cnes/cnv/estabbr.def",
                      "Content-Type":"application/x-www-form-urlencoded"}, timeout=30)
         if r.status_code != 200: return {"status":"HTTP_ERROR","data":[]}
-        return {"status":"OK","data":parse_tabnet(r.text, uf, tipo_nome)}
+        parsed = parse_tabnet(r.text, uf, tipo_nome)
+        if not parsed and len(r.text) > 500:
+            log(f"    {tipo_nome}: HTML recebido ({len(r.text)} bytes) mas parse retornou 0 resultados", "WARN")
+            # Salvar amostra para debug
+            sample = r.text[:2000].replace('\n',' ')[:500]
+            log(f"    HTML amostra: {sample}", "DEBUG")
+        return {"status":"OK","data":parsed}
     except requests.Timeout: return {"status":"TIMEOUT","data":[]}
     except Exception as e: return {"status":"ERROR","data":[]}
 
@@ -169,6 +190,9 @@ def main():
     log(f"  Patch:          {pf}")
     log(f"  Tempo:          {elapsed:.0f}s")
     log(f"{'='*50}")
+    if len(todos) == 0:
+        log("ERRO FATAL: 0 municipios coletados — possivel mudanca no formato TabNet", "ERROR")
+        sys.exit(2)
     sys.exit(0 if not erros else 1)
 
 if __name__ == "__main__":
