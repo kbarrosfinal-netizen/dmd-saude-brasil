@@ -14,14 +14,21 @@ try:
 except ImportError:
     print("ERRO: pip install requests"); sys.exit(1)
 
-TABNET_URL = "http://tabnet.datasus.gov.br/cgi/tabcgi.exe"
-CAPS_TIPOS = {"70":"CAPS I","71":"CAPS II","72":"CAPS III",
-              "73":"CAPSi","74":"CAPSad","75":"CAPSad III","76":"CAPSad IV","67":"SRT"}
-UF_COD = {"AC":"12","AL":"27","AM":"13","AP":"16","BA":"29","CE":"23","DF":"53",
-          "ES":"32","GO":"52","MA":"21","MG":"31","MS":"50","MT":"51","PA":"15",
-          "PB":"25","PE":"26","PI":"22","PR":"41","RJ":"33","RN":"24","RO":"11",
-          "RR":"14","RS":"43","SC":"42","SE":"28","SP":"35","TO":"17"}
-UFS_ALL = sorted(UF_COD.keys())
+TABNET_URL = "http://tabnet.datasus.gov.br/cgi/tabcgi.exe?cnes/cnv/estabbr.def"
+TABNET_REFERER = "http://tabnet.datasus.gov.br/cgi/deftohtm.exe?cnes/cnv/estabbr.def"
+
+# Tipos de estabelecimento no TabNet (valor do SELECT STipo_de_Estabelecimento)
+# 30 = CAPS, 38 = Residencial Terapeutico (inclui SRT)
+TABNET_TIPOS = {"30": "CAPS", "38": "SRT"}
+
+# UFs no TabNet — valores sequenciais 1-27 (NAO sao codigos IBGE!)
+UF_TABNET = {
+    "AC":"1","AL":"2","AM":"4","AP":"3","BA":"5","CE":"6","DF":"7","ES":"8",
+    "GO":"9","MA":"10","MG":"13","MS":"12","MT":"11","PA":"14","PB":"15",
+    "PE":"17","PI":"18","PR":"16","RJ":"19","RN":"20","RO":"22","RR":"23",
+    "RS":"21","SC":"24","SE":"26","SP":"25","TO":"27",
+}
+UFS_ALL = sorted(UF_TABNET.keys())
 
 def log(msg, lvl="INFO"):
     print(f"[{datetime.datetime.now():%H:%M:%S}][{lvl}] {msg}")
@@ -50,67 +57,116 @@ def load_ibge_map(path):
                     i7 = ir.zfill(7); mapa[i7[:6]] = {"ibge7":i7,"nome":m.get("m",""),"uf":uf}
     return mapa
 
-def build_payload(uf_cod, tipo_cod):
-    base = {k:"TODAS_AS_CATEGORIAS__" for k in [
-        "SMunic","SMunicgestor","SCapital","SRegsaud","SMacsaud","SMicr","SRmetrop",
-        "STerCidadania","SMesorregPNDR","SAmazLegal","SSemiarido","SFaixFront","SZonFront",
-        "SMunExtrPobr","SEnsPesq","SNatJur","SEsfJur","SEsfAdm","SNatureza","STipoGestao"]}
-    base.update({"Linha":"Município","Coluna":"--Nenhuma--","Incremento":"Estabelecimentos",
-                 "Arquivos":"estabbr.def","pesqmes1":"Digite o texto e clique na lupa",
-                 "STipoUnid":tipo_cod,"SUF":uf_cod,"zeran":"1","formato":"table","mostre":"Mostra"})
-    return base
+def competencia_to_dbf(mes, ano):
+    """Converte mes/ano para nome do arquivo DBF do TabNet. Ex: 3,2026 -> stbr2603.dbf"""
+    return f"stbr{str(ano)[2:]}{mes:02d}.dbf"
+
+def build_tabnet_body(uf_tabnet_cod, tipo_cod, dbf_arquivo):
+    """Constroi body do POST TabNet com nomes de campo ISO-8859-1 corretos."""
+    # Nomes dos campos SELECT no formulario TabNet (ISO-8859-1)
+    fields = [
+        ("Linha", "Munic\xedpio"),
+        ("Coluna", "--N\xe3o-Ativa--"),
+        ("Incremento", "Quantidade"),
+        ("Arquivos", dbf_arquivo),
+        ("SRegi\xe3o", "TODAS_AS_CATEGORIAS__"),
+        ("SUnidade_da_Federa\xe7\xe3o", uf_tabnet_cod),
+        ("SMunic\xedpio", "TODAS_AS_CATEGORIAS__"),
+        ("SMunic\xedpio_gestor", "TODAS_AS_CATEGORIAS__"),
+        ("SCapital", "TODAS_AS_CATEGORIAS__"),
+        ("SRegi\xe3o_de_Sa\xfade_(CIR)", "TODAS_AS_CATEGORIAS__"),
+        ("SMacrorregi\xe3o_de_Sa\xfade", "TODAS_AS_CATEGORIAS__"),
+        ("SMicrorregi\xe3o_IBGE", "TODAS_AS_CATEGORIAS__"),
+        ("SRegi\xe3o_Metropolitana_-_RIDE", "TODAS_AS_CATEGORIAS__"),
+        ("STerrit\xf3rio_da_Cidadania", "TODAS_AS_CATEGORIAS__"),
+        ("SMesorregi\xe3o_PNDR", "TODAS_AS_CATEGORIAS__"),
+        ("SAmaz\xf4nia_Legal", "TODAS_AS_CATEGORIAS__"),
+        ("SSemi\xe1rido", "TODAS_AS_CATEGORIAS__"),
+        ("SFaixa_de_Fronteira", "TODAS_AS_CATEGORIAS__"),
+        ("SZona_de_Fronteira", "TODAS_AS_CATEGORIAS__"),
+        ("SMunic\xedpio_de_extrema_pobreza", "TODAS_AS_CATEGORIAS__"),
+        ("SEnsino/Pesquisa", "TODAS_AS_CATEGORIAS__"),
+        ("SNatureza_Jur\xeddica", "TODAS_AS_CATEGORIAS__"),
+        ("SEsfera_Jur\xeddica", "TODAS_AS_CATEGORIAS__"),
+        ("SEsfera_Administrativa", "TODAS_AS_CATEGORIAS__"),
+        ("SNatureza", "TODAS_AS_CATEGORIAS__"),
+        ("STipo_de_Estabelecimento", tipo_cod),
+        ("STipo_de_Gest\xe3o", "TODAS_AS_CATEGORIAS__"),
+        ("STipo_de_Prestador", "TODAS_AS_CATEGORIAS__"),
+        ("formato", "table"),
+        ("mostre", "Mostra"),
+    ]
+    import urllib.parse
+    parts = []
+    for name, value in fields:
+        enc_n = urllib.parse.quote(name, safe="/()", encoding="latin-1")
+        enc_v = urllib.parse.quote(value, safe="_+()", encoding="latin-1")
+        parts.append(f"{enc_n}={enc_v}")
+    return "&".join(parts).encode("latin-1")
 
 def parse_tabnet(html, uf, tipo):
+    """Parse do HTML TabNet. O HTML usa tags nao fechadas (<TD> sem </TD>)."""
     res = []
-    # Padrao 1: codigo IBGE 6 digitos + nome + quantidade
-    for i6, nome, cnt in re.findall(r'<td[^>]*>(\d{6})\s+([^<]+)</td>\s*<td[^>]*>(\d+)</td>', html, re.I):
-        res.append({"ibge6":i6.strip(),"nome_tabnet":nome.strip(),"count":int(cnt),"tipo":tipo,"uf":uf})
-    if res: return res
-    # Padrao 2: codigo IBGE 7 digitos + nome + quantidade
-    for i7, nome, cnt in re.findall(r'<td[^>]*>(\d{7})\s+([^<]+)</td>\s*<td[^>]*>(\d+)</td>', html, re.I):
-        res.append({"ibge6":i7[:6].strip(),"nome_tabnet":nome.strip(),"count":int(cnt),"tipo":tipo,"uf":uf})
-    if res: return res
-    # Padrao 3: nome em td com classe "linha" + quantidade
-    for nome, cnt in re.findall(r'<td[^>]*class="[^"]*linha[^"]*"[^>]*>([^<]{3,50})</td>\s*<td[^>]*>(\d+)</td>', html, re.I):
-        res.append({"ibge6":"","nome_tabnet":nome.strip(),"count":int(cnt),"tipo":tipo,"uf":uf})
-    if res: return res
-    # Padrao 4: qualquer td com 6+ digitos seguido de texto e td com numero
-    for i6, nome, cnt in re.findall(r'<td[^>]*>\s*(\d{6,7})\s*[-\s]+([^<]+?)\s*</td>\s*<td[^>]*>\s*(\d+)\s*</td>', html, re.I):
-        res.append({"ibge6":i6[:6].strip(),"nome_tabnet":nome.strip(),"count":int(cnt),"tipo":tipo,"uf":uf})
-    if res: return res
-    # Padrao 5: nome sem codigo + quantidade (ultima tentativa)
-    for nome, cnt in re.findall(r'<td[^>]*>\s*([A-ZÀ-Ú][^<]{2,49}?)\s*</td>\s*<td[^>]*>\s*(\d+)\s*</td>', html, re.I):
-        if nome.strip() and not nome.strip().startswith('Total'):
-            res.append({"ibge6":"","nome_tabnet":nome.strip(),"count":int(cnt),"tipo":tipo,"uf":uf})
+    # Formato real do TabNet:
+    #   <TR align="right">
+    #   <TD ALIGN=LEFT>130260 MANAUS
+    #   <TD>7
+    # Padrao principal: TD com IBGE 6 digitos + nome, seguido de TD com numero
+    for ibge, nome, cnt in re.findall(
+            r'<TD[^>]*>\s*(\d{6})\s+([^<\n]+?)\s*\n\s*<TD[^>]*>\s*(\d+)',
+            html, re.I):
+        if nome.strip().upper() != 'TOTAL':
+            res.append({"ibge6": ibge.strip(), "nome_tabnet": nome.strip(),
+                         "count": int(cnt), "tipo": tipo, "uf": uf})
+    if res:
+        return res
+    # Fallback: TDs fechadas (formato alternativo)
+    for ibge, nome, cnt in re.findall(
+            r'<td[^>]*>(\d{6})\s+([^<]+)</td>\s*<td[^>]*>(\d+)</td>',
+            html, re.I):
+        res.append({"ibge6": ibge.strip(), "nome_tabnet": nome.strip(),
+                     "count": int(cnt), "tipo": tipo, "uf": uf})
     return res
 
-def fetch_tipo(uf, tipo_cod):
-    tipo_nome = CAPS_TIPOS[tipo_cod]
+def fetch_tipo(uf, tipo_cod, dbf_arquivo):
+    """Faz POST ao TabNet e retorna dados parseados."""
+    tipo_nome = TABNET_TIPOS[tipo_cod]
+    uf_cod = UF_TABNET.get(uf, "")
+    if not uf_cod:
+        return {"status": "UF_INVALIDA", "data": []}
     try:
-        r = requests.post(f"{TABNET_URL}?cnes/cnv/estabbr.def",
-            data=build_payload(UF_COD[uf], tipo_cod),
-            headers={"User-Agent":"Mozilla/5.0 (DMD-Pipeline/4.0; EMET)",
-                     "Referer":"http://tabnet.datasus.gov.br/cgi/deftohtm.exe?cnes/cnv/estabbr.def",
-                     "Content-Type":"application/x-www-form-urlencoded"}, timeout=30)
-        if r.status_code != 200: return {"status":"HTTP_ERROR","data":[]}
-        parsed = parse_tabnet(r.text, uf, tipo_nome)
-        if not parsed and len(r.text) > 500:
-            log(f"    {tipo_nome}: HTML recebido ({len(r.text)} bytes) mas parse retornou 0 resultados", "WARN")
-            # Salvar amostra para debug
-            sample = r.text[:2000].replace('\n',' ')[:500]
-            log(f"    HTML amostra: {sample}", "DEBUG")
-        return {"status":"OK","data":parsed}
-    except requests.Timeout: return {"status":"TIMEOUT","data":[]}
-    except Exception as e: return {"status":"ERROR","data":[]}
+        body = build_tabnet_body(uf_cod, tipo_cod, dbf_arquivo)
+        r = requests.post(TABNET_URL, data=body, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "Referer": TABNET_REFERER,
+            "Content-Type": "application/x-www-form-urlencoded",
+        }, timeout=45)
+        if r.status_code != 200:
+            return {"status": "HTTP_ERROR", "data": []}
+        # Decodificar como latin-1 (charset do TabNet)
+        text = r.content.decode("latin-1", errors="replace")
+        parsed = parse_tabnet(text, uf, tipo_nome)
+        if not parsed and len(text) > 2000:
+            log(f"    {tipo_nome}: HTML {len(text)} bytes mas 0 resultados", "WARN")
+        elif not parsed and len(text) < 2000:
+            log(f"    {tipo_nome}: resposta pequena ({len(text)} bytes) — possivel formulario", "WARN")
+        return {"status": "OK", "data": parsed}
+    except requests.Timeout:
+        log(f"    {tipo_nome}: TIMEOUT", "WARN")
+        return {"status": "TIMEOUT", "data": []}
+    except Exception as e:
+        log(f"    {tipo_nome}: ERRO — {e}", "ERROR")
+        return {"status": "ERROR", "data": []}
 
-def coletar_uf(uf, mapa):
+def coletar_uf(uf, mapa, dbf_arquivo):
+    """Coleta CAPS e SRT para uma UF via TabNet."""
     log(f"  {uf}: coletando TabNet...")
     ag = {}
-    for tc in CAPS_TIPOS:
-        res = fetch_tipo(uf, tc)
-        tn = CAPS_TIPOS[tc]
+    for tc, tn in TABNET_TIPOS.items():
+        res = fetch_tipo(uf, tc, dbf_arquivo)
         if res["status"] != "OK":
             log(f"    {tn}: {res['status']}", "WARN"); time.sleep(2); continue
+        log(f"    {tn}: {len(res['data'])} municipios")
         for it in res["data"]:
             i6 = it["ibge6"]; key = i6 if i6 else normalize(it["nome_tabnet"])
             if key not in ag:
@@ -148,17 +204,18 @@ def main():
         comp = ma.strftime("%m%Y")
     mes, ano, ref = int(comp[:2]), int(comp[2:]), f"{comp[:2]}/{comp[2:]}"
     ufs = args.ufs or UFS_ALL
+    dbf = competencia_to_dbf(mes, ano)
     t0 = time.time()
-    log(f"DMD Saude Brasil — Coletor CNES v4.0")
-    log(f"Competencia: {ref} | UFs: {len(ufs)}")
+    log(f"DMD Saude Brasil — Coletor CNES v5.0")
+    log(f"Competencia: {ref} | DBF: {dbf} | UFs: {len(ufs)}")
 
     mapa = load_ibge_map(args.municipios_json)
-    log(f"Mapa IBGE: {len(mapa)} municipios")
+    log(f"Mapa IBGE: {len(mapa)} municipios (0 = sem mapa, usa nomes TabNet)")
 
     todos, status = [], {}
     for uf in ufs:
         try:
-            muns = coletar_uf(uf, mapa); todos.extend(muns); status[uf] = "OK"
+            muns = coletar_uf(uf, mapa, dbf); todos.extend(muns); status[uf] = "OK"
         except Exception as e:
             log(f"  {uf}: ERRO — {e}", "ERROR"); status[uf] = f"ERRO"
         time.sleep(2)
