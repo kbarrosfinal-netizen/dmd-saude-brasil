@@ -5795,6 +5795,27 @@ async function loadAllMunis() {
         g: 0,
         siops_desp: 0,
 
+        // Profissionais per capita (calculados a partir de dados disponiveis)
+        medicos_1k: 0,   // Supabase nao tem — seria CNES profissionais
+        enfermeiros_1k: 0,
+        esf_1k: (r.equipes_esf && m.populacao) ? (r.equipes_esf / m.populacao * 1000) : 0,
+        acs_1k: (r.acs_total && m.populacao) ? (r.acs_total / m.populacao * 1000) : 0,
+        esf_pct: r.cobertura_esf_pct || 0,
+
+        // Score V2 (mapeado a partir do V3 se V2 nao existir)
+        score_v2: r.score_v3 || 0,
+        risco_v2: r.classificacao || '',
+        score_v2_ab: r.comp_esf || 0,
+        score_v2_iv: r.comp_deficit_leitos || 0,
+        score_v2_raps: 0,
+        score_v2_se: 0,
+        score_v2_san: 0,
+        score_v2_fin: r.comp_receita || 0,
+
+        // Infraestrutura adicional
+        estab_sus: 0,
+        leitos_sus_1k: r.leitos_por_1k || 0,
+
         // Flags (calculados)
         f: 0,
         n_flags: 0,
@@ -13661,44 +13682,7 @@ function exportarRelatorioNacional(all){
     'table{width:100%;border-collapse:collapse;margin:16px 0}'+
     'th{background:#003366;color:#fff;padding:8px}td{padding:6px;border-bottom:1px solid #eee}'+
     '.crit{color:#cc0000;font-weight:700}.sub{margin-top:40px;font-size:.75rem;color:#666;border-top:1px solid #ccc;padding-top:8px}'+
-    '</style><style>
-.supa-loading{text-align:center;padding:40px;color:#00C6BD;font-size:14px;font-family:'Space Grotesk',sans-serif;}
-.supa-loading::before{content:'';display:block;width:32px;height:32px;border:3px solid #1B2A3D;border-top-color:#00C6BD;border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-// ══════════════════════════════════════════════════════════════
-// DMD SAUDE BRASIL — CONEXAO SUPABASE (anon key — segura para frontend)
-// ══════════════════════════════════════════════════════════════
-var SUPA_URL = 'https://xxckbdilszvfmzyoquze.supabase.co';
-var SUPA_KEY = 'sb_publishable_6zHUr_Olsac5o7dMc_LLug_2tK7boQu';
-var _db = supabase.createClient(SUPA_URL, SUPA_KEY);
-var _cache = {};
-
-// Verificar conexao ao inicializar
-(async function() {
-  try {
-    var r = await _db.from('municipios').select('ibge', { count: 'exact', head: true });
-    var el = document.getElementById('db-status');
-    if (el) {
-      if (r.count > 0) {
-        el.textContent = 'Banco ativo — ' + r.count.toLocaleString('pt-BR') + ' municipios — Supabase';
-        el.style.color = '#00C6BD';
-      } else {
-        el.textContent = 'Banco vazio — verifique carga';
-        el.style.color = '#F59E0B';
-      }
-    }
-  } catch(e) {
-    var el = document.getElementById('db-status');
-    if (el) { el.textContent = 'Banco offline'; el.style.color = '#E74C3C'; }
-  }
-})();
-</script>
-
-</head><body>'+
+    '</style></head><body>'+
     '<h1>📊 EMET DMD Gestão Brasil — Relatório Nacional</h1>'+
     '<p><b>Competência:</b> CNES 02/2026 · <b>Gerado em:</b> '+new Date().toLocaleString('pt-BR')+'</p>'+
     '<h2>KPI Nacional</h2><table>'+
@@ -15168,44 +15152,7 @@ window.DMD={
     var html='<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>DMD Saúde Brasil — Dashboard Nacional V43 · 5.569 Municípios · EMET Gestão Brasil</title>'+
       '<style>body{font-family:Arial,sans-serif;max-width:1100px;margin:40px auto;color:#1a2a3a}'+
       'table{width:100%;border-collapse:collapse}th{background:#003366;color:#fff;padding:8px}'+
-      'td{padding:6px;border-bottom:1px solid #eee}.crit{color:#cc0000;font-weight:700}</style><style>
-.supa-loading{text-align:center;padding:40px;color:#00C6BD;font-size:14px;font-family:'Space Grotesk',sans-serif;}
-.supa-loading::before{content:'';display:block;width:32px;height:32px;border:3px solid #1B2A3D;border-top-color:#00C6BD;border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-// ══════════════════════════════════════════════════════════════
-// DMD SAUDE BRASIL — CONEXAO SUPABASE (anon key — segura para frontend)
-// ══════════════════════════════════════════════════════════════
-var SUPA_URL = 'https://xxckbdilszvfmzyoquze.supabase.co';
-var SUPA_KEY = 'sb_publishable_6zHUr_Olsac5o7dMc_LLug_2tK7boQu';
-var _db = supabase.createClient(SUPA_URL, SUPA_KEY);
-var _cache = {};
-
-// Verificar conexao ao inicializar
-(async function() {
-  try {
-    var r = await _db.from('municipios').select('ibge', { count: 'exact', head: true });
-    var el = document.getElementById('db-status');
-    if (el) {
-      if (r.count > 0) {
-        el.textContent = 'Banco ativo — ' + r.count.toLocaleString('pt-BR') + ' municipios — Supabase';
-        el.style.color = '#00C6BD';
-      } else {
-        el.textContent = 'Banco vazio — verifique carga';
-        el.style.color = '#F59E0B';
-      }
-    }
-  } catch(e) {
-    var el = document.getElementById('db-status');
-    if (el) { el.textContent = 'Banco offline'; el.style.color = '#E74C3C'; }
-  }
-})();
-</script>
-
-</head><body>'+
+      'td{padding:6px;border-bottom:1px solid #eee}.crit{color:#cc0000;font-weight:700}</style></head><body>'+
       '<h2>'+(title||'Relatório DMD')+'</h2>'+
       '<p>Gerado em '+new Date().toLocaleString('pt-BR')+' · EMET DMD Gestão Brasil · CNES 02/2026</p>'+
       '<table><tr>'+fields.map(function(f){return '<th>'+(LABELS[f]||f)+'</th>';}).join('')+'</tr>'+
@@ -17840,44 +17787,7 @@ function gerarRelatorioPDF(uf){
     '.k{background:#f4f8fb;border:1px solid #dde5ed;border-radius:5px;padding:8px;text-align:center;border-top:3px solid #00A896}',
     '.kv{font-size:18px;font-weight:700;color:#0F2A47}.kl{font-size:8px;color:#666;margin-top:2px;text-transform:uppercase;letter-spacing:0.04em}',
     '.ft{margin-top:24px;padding-top:8px;border-top:1px solid #ddd;font-size:8px;color:#888;text-align:center}',
-    '@media print{.np{display:none}}</style><style>
-.supa-loading{text-align:center;padding:40px;color:#00C6BD;font-size:14px;font-family:'Space Grotesk',sans-serif;}
-.supa-loading::before{content:'';display:block;width:32px;height:32px;border:3px solid #1B2A3D;border-top-color:#00C6BD;border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-// ══════════════════════════════════════════════════════════════
-// DMD SAUDE BRASIL — CONEXAO SUPABASE (anon key — segura para frontend)
-// ══════════════════════════════════════════════════════════════
-var SUPA_URL = 'https://xxckbdilszvfmzyoquze.supabase.co';
-var SUPA_KEY = 'sb_publishable_6zHUr_Olsac5o7dMc_LLug_2tK7boQu';
-var _db = supabase.createClient(SUPA_URL, SUPA_KEY);
-var _cache = {};
-
-// Verificar conexao ao inicializar
-(async function() {
-  try {
-    var r = await _db.from('municipios').select('ibge', { count: 'exact', head: true });
-    var el = document.getElementById('db-status');
-    if (el) {
-      if (r.count > 0) {
-        el.textContent = 'Banco ativo — ' + r.count.toLocaleString('pt-BR') + ' municipios — Supabase';
-        el.style.color = '#00C6BD';
-      } else {
-        el.textContent = 'Banco vazio — verifique carga';
-        el.style.color = '#F59E0B';
-      }
-    }
-  } catch(e) {
-    var el = document.getElementById('db-status');
-    if (el) { el.textContent = 'Banco offline'; el.style.color = '#E74C3C'; }
-  }
-})();
-</script>
-
-</head><body>'];
+    '@media print{.np{display:none}}</style></head><body>'];
   parts.push('<div class="hdr"><div><h1>DMD Sa\u00fade Brasil</h1><div style="color:#00A896;font-size:10px;letter-spacing:0.08em">EMET GEST\u00c3O BRASIL \u00b7 RELAT\u00d3RIO EXECUTIVO \u00b7 V44</div></div>');
   parts.push('<div style="text-align:right;font-size:10px;color:#666">'+titulo+'<br>'+new Date().toLocaleDateString('pt-BR')+'<br>'+nMun.toLocaleString('pt-BR')+' mun. \u00b7 '+pop.toLocaleString('pt-BR')+' hab.</div></div>');
   parts.push('<div class="kg">');
