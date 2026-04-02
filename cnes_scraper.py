@@ -14,8 +14,17 @@ try:
 except ImportError:
     print("ERRO: pip install requests"); sys.exit(1)
 
-TABNET_URL = "http://tabnet.datasus.gov.br/cgi/tabcgi.exe?cnes/cnv/estabbr.def"
-TABNET_REFERER = "http://tabnet.datasus.gov.br/cgi/deftohtm.exe?cnes/cnv/estabbr.def"
+TABNET_FORM_URL = "http://tabnet.datasus.gov.br/cgi/deftohtm.exe?cnes/cnv/estabbr.def"
+TABNET_POST_URL = "http://tabnet.datasus.gov.br/cgi/tabcgi.exe?cnes/cnv/estabbr.def"
+TABNET_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+    "Accept-Encoding": "gzip, deflate",
+    "Referer": "http://tabnet.datasus.gov.br/cgi/deftohtm.exe?cnes/cnv/estabbr.def",
+    "Origin": "http://tabnet.datasus.gov.br",
+    "Connection": "keep-alive",
+}
 
 # Tipos de estabelecimento no TabNet (valor do SELECT STipo_de_Estabelecimento)
 # 30 = CAPS, 38 = Residencial Terapeutico (inclui SRT)
@@ -128,42 +137,82 @@ def parse_tabnet(html, uf, tipo):
                      "count": int(cnt), "tipo": tipo, "uf": uf})
     return res
 
-def fetch_tipo(uf, tipo_cod, dbf_arquivo):
-    """Faz POST ao TabNet e retorna dados parseados."""
+def criar_session():
+    """Cria requests.Session com cookies do TabNet (GET previo no formulario)."""
+    session = requests.Session()
+    session.headers.update(TABNET_HEADERS)
+    try:
+        log("  Iniciando session TabNet (GET formulario para cookies)...")
+        r = session.get(TABNET_FORM_URL, timeout=30)
+        cookies = dict(session.cookies)
+        log(f"  Session OK — status={r.status_code}, cookies={list(cookies.keys())}, "
+            f"tamanho={len(r.content)} bytes")
+    except Exception as e:
+        log(f"  AVISO: GET formulario falhou ({e}) — continuando sem cookies", "WARN")
+    return session
+
+
+def fetch_tipo(session, uf, tipo_cod, dbf_arquivo):
+    """Faz POST ao TabNet usando session com cookies e retorna dados parseados."""
     tipo_nome = TABNET_TIPOS[tipo_cod]
     uf_cod = UF_TABNET.get(uf, "")
     if not uf_cod:
         return {"status": "UF_INVALIDA", "data": []}
-    try:
-        body = build_tabnet_body(uf_cod, tipo_cod, dbf_arquivo)
-        r = requests.post(TABNET_URL, data=body, headers={
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-            "Referer": TABNET_REFERER,
-            "Content-Type": "application/x-www-form-urlencoded",
-        }, timeout=45)
-        if r.status_code != 200:
-            return {"status": "HTTP_ERROR", "data": []}
-        # Decodificar como latin-1 (charset do TabNet)
-        text = r.content.decode("latin-1", errors="replace")
-        parsed = parse_tabnet(text, uf, tipo_nome)
-        if not parsed and len(text) > 2000:
-            log(f"    {tipo_nome}: HTML {len(text)} bytes mas 0 resultados", "WARN")
-        elif not parsed and len(text) < 2000:
-            log(f"    {tipo_nome}: resposta pequena ({len(text)} bytes) — possivel formulario", "WARN")
-        return {"status": "OK", "data": parsed}
-    except requests.Timeout:
-        log(f"    {tipo_nome}: TIMEOUT", "WARN")
-        return {"status": "TIMEOUT", "data": []}
-    except Exception as e:
-        log(f"    {tipo_nome}: ERRO — {e}", "ERROR")
-        return {"status": "ERROR", "data": []}
 
-def coletar_uf(uf, mapa, dbf_arquivo):
+    body = build_tabnet_body(uf_cod, tipo_cod, dbf_arquivo)
+
+    for tentativa in range(2):
+        try:
+            r = session.post(
+                TABNET_POST_URL, data=body,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                timeout=45,
+            )
+            if r.status_code != 200:
+                log(f"    {tipo_nome}: HTTP {r.status_code}", "WARN")
+                return {"status": "HTTP_ERROR", "data": []}
+
+            text = r.content.decode("latin-1", errors="replace")
+
+            # Verificar se recebemos dados ou formulario
+            if len(text) < 1800 and "tabdados" not in text.lower():
+                if tentativa == 0:
+                    log(f"    {tipo_nome}: resposta pequena ({len(text)} bytes), "
+                        f"retry em 3s...", "WARN")
+                    time.sleep(3)
+                    # Refazer GET para renovar cookies
+                    try:
+                        session.get(TABNET_FORM_URL, timeout=15)
+                    except Exception:
+                        pass
+                    continue
+                else:
+                    log(f"    {tipo_nome}: resposta pequena apos retry ({len(text)} bytes)", "WARN")
+                    return {"status": "OK", "data": []}
+
+            parsed = parse_tabnet(text, uf, tipo_nome)
+            if not parsed and len(text) > 2000:
+                log(f"    {tipo_nome}: HTML {len(text)} bytes mas 0 resultados", "WARN")
+            return {"status": "OK", "data": parsed}
+
+        except requests.Timeout:
+            log(f"    {tipo_nome}: TIMEOUT (tentativa {tentativa+1})", "WARN")
+            if tentativa == 0:
+                time.sleep(3)
+                continue
+            return {"status": "TIMEOUT", "data": []}
+        except Exception as e:
+            log(f"    {tipo_nome}: ERRO — {e}", "ERROR")
+            return {"status": "ERROR", "data": []}
+
+    return {"status": "RETRY_FAILED", "data": []}
+
+def coletar_uf(session, uf, mapa, dbf_arquivo):
     """Coleta CAPS e SRT para uma UF via TabNet."""
     log(f"  {uf}: coletando TabNet...")
     ag = {}
     for tc, tn in TABNET_TIPOS.items():
-        res = fetch_tipo(uf, tc, dbf_arquivo)
+        res = fetch_tipo(session, uf, tc, dbf_arquivo)
         if res["status"] != "OK":
             log(f"    {tn}: {res['status']}", "WARN"); time.sleep(2); continue
         log(f"    {tn}: {len(res['data'])} municipios")
@@ -206,16 +255,20 @@ def main():
     ufs = args.ufs or UFS_ALL
     dbf = competencia_to_dbf(mes, ano)
     t0 = time.time()
-    log(f"DMD Saude Brasil — Coletor CNES v5.0")
+    log(f"DMD Saude Brasil — Coletor CNES v5.1 (session+cookies)")
     log(f"Competencia: {ref} | DBF: {dbf} | UFs: {len(ufs)}")
 
     mapa = load_ibge_map(args.municipios_json)
     log(f"Mapa IBGE: {len(mapa)} municipios (0 = sem mapa, usa nomes TabNet)")
 
+    # Criar session com cookies do TabNet
+    session = criar_session()
+
     todos, status = [], {}
     for uf in ufs:
         try:
-            muns = coletar_uf(uf, mapa, dbf); todos.extend(muns); status[uf] = "OK"
+            muns = coletar_uf(session, uf, mapa, dbf)
+            todos.extend(muns); status[uf] = "OK"
         except Exception as e:
             log(f"  {uf}: ERRO — {e}", "ERROR"); status[uf] = f"ERRO"
         time.sleep(2)
