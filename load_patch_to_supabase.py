@@ -169,20 +169,48 @@ def main():
         patch = json.load(f)
 
     competencia = patch.get("competencia", "")
+    # Aceitar municipios em varios formatos possiveis
     municipios = patch.get("municipios", [])
+    # Se municipios eh dict (agrupado por UF), achatar
+    if isinstance(municipios, dict):
+        flat = []
+        for uf, muns in municipios.items():
+            if isinstance(muns, list):
+                for m in muns:
+                    if isinstance(m, dict) and "uf" not in m:
+                        m["uf"] = uf
+                    flat.append(m)
+        municipios = flat
+    # Tentar campo alternativo se municipios vazio
+    if not municipios:
+        for alt in ["dados", "data", "results", "registros"]:
+            municipios = patch.get(alt, [])
+            if municipios:
+                print(f"  Campo '{alt}' usado em vez de 'municipios'")
+                break
     print(f"  Competencia: {competencia}")
     print(f"  Municipios no patch: {len(municipios)}")
+    print(f"  Chaves do patch: {list(patch.keys())}")
 
-    if not competencia or not municipios:
-        print("ERRO: patch vazio ou sem competencia.")
+    if not competencia:
+        print("ERRO: patch sem campo 'competencia'.")
         sys.exit(1)
 
-    # Extrair mes/ano
-    parts = competencia.split("/")
-    if len(parts) != 2:
-        print(f"ERRO: formato de competencia invalido: {competencia} (esperado MM/AAAA)")
+    if not municipios:
+        print("AVISO: patch com 0 municipios — nada a carregar.")
+        print("  Verifique se o cnes_scraper.py coletou dados do TabNet.")
+        sys.exit(0)
+
+    # Extrair mes/ano — aceitar MM/AAAA ou MMAAAA
+    competencia = competencia.strip()
+    if "/" in competencia:
+        parts = competencia.split("/")
+        mes, ano = int(parts[0]), int(parts[1])
+    elif len(competencia) == 6 and competencia.isdigit():
+        mes, ano = int(competencia[:2]), int(competencia[2:])
+    else:
+        print(f"ERRO: formato de competencia invalido: {competencia}")
         sys.exit(1)
-    mes, ano = int(parts[0]), int(parts[1])
 
     # Conectar
     print("  Conectando ao Supabase...")
