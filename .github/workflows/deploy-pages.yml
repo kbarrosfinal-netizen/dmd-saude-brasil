@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - "index.html"
+      - "index_supabase.html"
       - "pipeline/pages/**"
 
 permissions:
@@ -33,6 +34,7 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html _site/index.html
+          cp index_supabase.html _site/index_supabase.html 2>/dev/null || true
           cp .nojekyll _site/.nojekyll 2>/dev/null || touch _site/.nojekyll
           echo "Dashboard copiado para deploy"
 
