@@ -1,0 +1,111 @@
+name: DMD Saude Brasil — Ingestao Supabase
+
+# Dispara quando um patch CNES eh pushado para main
+# Fluxo: Karina roda cnes_scraper.py localmente -> push -> este workflow carrega no Supabase
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cnes_data/cnes_patch_*.json'
+  workflow_dispatch:
+
+env:
+  SUPABASE_HOST: ${{ secrets.SUPABASE_HOST }}
+  SUPABASE_PORT: '5432'
+  SUPABASE_DB: 'postgres'
+  SUPABASE_USER: 'postgres'
+  SUPABASE_PASSWORD: ${{ secrets.SUPABASE_PASSWORD }}
+
+jobs:
+  ingestao-supabase:
+    name: Carregar patch CNES no Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install psycopg2-binary
+
+      - name: Detectar patch mais recente
+        id: patch
+        run: |
+          PATCH_FILE=$(ls -1 cnes_data/cnes_patch_*.json 2>/dev/null | sort | tail -1)
+
+          if [ -z "$PATCH_FILE" ] || [ ! -f "$PATCH_FILE" ]; then
+            echo "Nenhum patch encontrado em cnes_data/"
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Patch: $PATCH_FILE"
+          echo "patch_file=$PATCH_FILE" >> "$GITHUB_OUTPUT"
+          echo "found=true" >> "$GITHUB_OUTPUT"
+
+          python3 << PYEOF
+          import json, os
+          pf = "$PATCH_FILE"
+          with open(pf) as f: p = json.load(f)
+          comp = p.get('competencia', '?')
+          total = p.get('total_municipios', 0)
+          caps = p.get('total_caps', 0)
+          print(f'  Competencia: {comp}')
+          print(f'  Municipios: {total}')
+          print(f'  CAPS: {caps}')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f'competencia={comp}\n')
+          PYEOF
+
+      - name: Carregar patch no Supabase
+        if: steps.patch.outputs.found == 'true'
+        env:
+          PATCH_FILE: ${{ steps.patch.outputs.patch_file }}
+        run: python load_patch_to_supabase.py --patch "$PATCH_FILE"
+
+      - name: Atualizar series CNES
+        if: steps.patch.outputs.found == 'true'
+        env:
+          REF: ${{ steps.patch.outputs.competencia }}
+        run: python update_series_cnes.py --competencia "$REF"
+
+      - name: Verificar saude do banco
+        if: steps.patch.outputs.found == 'true'
+        run: python check_supabase.py 2>&1 | tee check_output.txt
+
+      - name: Salvar artefatos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ingestao-${{ steps.patch.outputs.competencia || 'manual' }}
+          path: check_output.txt
+          retention-days: 90
+
+      - name: Publicar resumo
+        if: always()
+        env:
+          COMP: ${{ steps.patch.outputs.competencia }}
+          FOUND: ${{ steps.patch.outputs.found }}
+          PATCH_FILE: ${{ steps.patch.outputs.patch_file }}
+        run: |
+          echo "## DMD Ingestao Supabase — $COMP" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Item | Valor |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Competencia | $COMP |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Patch | $PATCH_FILE |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Encontrado | $FOUND |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f check_output.txt ]; then
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            cat check_output.txt >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi

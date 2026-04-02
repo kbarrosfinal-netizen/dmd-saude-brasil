@@ -1,8 +1,11 @@
-name: DMD Saude Brasil — Pipeline Mensal CNES
+name: DMD Saude Brasil — Pipeline Mensal CNES (DESABILITADO)
 
+# DESABILITADO: O TabNet DATASUS bloqueia IPs de datacenter (GitHub Actions).
+# O scraper deve ser rodado LOCALMENTE com: ./run_monthly.sh
+# Ao fazer push do patch, o workflow cnes-load-pipeline.yml carrega no Supabase.
 on:
-  schedule:
-    - cron: '0 12 16 * *'
+  # schedule:
+  #   - cron: '0 12 16 * *'
   workflow_dispatch:
     inputs:
       competencia:
