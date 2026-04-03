@@ -1431,7 +1431,7 @@ footer,.footer,#footer{background:#0D1B2A!important;color:#8899AA!important}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ══════════════════════════════════════════════════════════════
-// DMD SAUDE BRASIL — CONEXAO SUPABASE (anon key — segura para frontend)
+// DMD SAÚDE BRASIL — CONEXAO SUPABASE (anon key — segura para frontend)
 // ══════════════════════════════════════════════════════════════
 var SUPA_URL = 'https://xxckbdilszvfmzyoquze.supabase.co';
 var SUPA_KEY = 'sb_publishable_6zHUr_Olsac5o7dMc_LLug_2tK7boQu';
@@ -1811,7 +1811,7 @@ var _cache = {};
       <div class="chart-wrap"><canvas id="cPareto"></canvas></div>
     </div>
     <div class="panel">
-      <div class="ph"><div><div class="pt">Ranking Déficit Nacional</div><div class="pst">Fonte: PARETO_DEFICIT_NACIONAL · V41</div></div><span class="ptag tr">22 ESTADOS</span></div>
+      <div class="ph"><div><div class="pt">Ranking Déficit Nacional</div><div class="pst">Fonte: PARETO_DÉFICIT_NACIONAL · V41</div></div><span class="ptag tr">22 ESTADOS</span></div>
       <div id="paretoList" style="max-height:250px;overflow-y:auto"></div>
     </div>
   </div>
@@ -5680,7 +5680,7 @@ Chart.prototype._dn=function(ctx,cw,ch){var d=this.data,ds=d.datasets[0],v=ds.da
 
 // ─── DATASET ESTADOS V41 ──────────────────────────────────────────────────────
 var ST=[
-  {uf:'AM',nome:'Amazonas',       reg:'Norte',       pop:4321616, orc:5.53,glosa:11.34,glosa_mi:215.4,leitos:1.47,esf:48.1,oport:400.0,piloto:true,  nd:false,evit:16,evit_mi:400,meta:2.0,cirurgias:336000,internacoes:294886},
+  {uf:'AM',nome:'Amazonas',       reg:'Norte',       pop:4321616, orc:5.53,glosa:11.34,glosa_mi:215.4,leitos:1.47,esf:48.1,oport:400.0,piloto:true,  nd:false,evit:16,evit_mi:400,meta:2.0,cirurgias:336000,internações:294886},
   {uf:'AC',nome:'Acre',           reg:'Norte',       pop:906876,  orc:1.24,glosa:8.4, glosa_mi:104.2,leitos:1.64,esf:68.0,oport:20.0, piloto:false, nd:false},
   {uf:'AL',nome:'Alagoas',        reg:'Nordeste',    pop:3365351, orc:3.98,glosa:7.5, glosa_mi:126.1,leitos:1.65,esf:82.4,oport:18.0, piloto:false, nd:false},
   {uf:'AP',nome:'Amapá',          reg:'Norte',       pop:834612,  orc:1.98,glosa:null,glosa_mi:22.0, leitos:2.09,esf:68.0,oport:12.0, piloto:false, nd:true},
@@ -8336,7 +8336,7 @@ function dcExport(){
   var cols=['m','uf','regiao','porte','pop','mort_cv_100k','mort_dm_100k','mort_has_100k','prev_dm_pct','prev_has_pct','score_v2','risco_v2'];
   var csv=cols.join(';')+'\n';
   _filt().forEach(function(m){csv+=cols.map(function(c){var v=m[c];return v==null?'':(typeof v==='object'?JSON.stringify(v):v);}).join(';')+'\n';});
-  var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='dmd-doencas-cronicas.csv';a.click();
+  var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='dmd-doencas-crônicas.csv';a.click();
 }
 G.dcRender=dcRender;G.dcSort=dcSort;G.dcPrev=dcPrev;G.dcNext=dcNext;G.initDC=initDC;G.dcExport=dcExport;
 })(window);
@@ -8491,7 +8491,7 @@ function sihExport() {
   var blob = new Blob([csv], {type:'text/csv'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'sih_internacoes_municipios.csv';
+  a.download = 'sih_internações_municipios.csv';
   a.click();
 }
 </script>
@@ -12676,7 +12676,7 @@ loadSMData(SAUDE_MENTAL_DATA);
 // Modelo: Regressão linear + ajustes demográficos + cenários
 // ═══════════════════════════════════════════════════════════════
 
-window.PROJECAO_PARAMS = {
+window.PROJEÇÃO_PARAMS = {
   // Taxas de crescimento populacional IBGE (% ao ano, projeção 2024)
   taxa_crescimento_uf: {
     "AC": 1.8, "AL": 0.6, "AM": 1.5, "AP": 2.1, "BA": 0.4, "CE": 0.5, "DF": 1.3,
@@ -13724,7 +13724,7 @@ function exportarRelatorioNacional(all){
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ══════════════════════════════════════════════════════════════
-// DMD SAUDE BRASIL — CONEXAO SUPABASE (anon key — segura para frontend)
+// DMD SAÚDE BRASIL — CONEXAO SUPABASE (anon key — segura para frontend)
 // ══════════════════════════════════════════════════════════════
 var SUPA_URL = 'https://xxckbdilszvfmzyoquze.supabase.co';
 var SUPA_KEY = 'sb_publishable_6zHUr_Olsac5o7dMc_LLug_2tK7boQu';
@@ -15240,7 +15240,7 @@ window.DMD={
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ══════════════════════════════════════════════════════════════
-// DMD SAUDE BRASIL — CONEXAO SUPABASE (anon key — segura para frontend)
+// DMD SAÚDE BRASIL — CONEXAO SUPABASE (anon key — segura para frontend)
 // ══════════════════════════════════════════════════════════════
 var SUPA_URL = 'https://xxckbdilszvfmzyoquze.supabase.co';
 var SUPA_KEY = 'sb_publishable_6zHUr_Olsac5o7dMc_LLug_2tK7boQu';
@@ -15615,15 +15615,15 @@ console.log('[AGENTE DMD V31] Iniciado · Build Mar-2026');
 // MÓDULO: ÍNDICE DMD DE EFICIÊNCIA ESTADUAL
 // ========================================
 
-var EFICIENCIA_DATA = null; // Cache dos cálculos
-var EFICIENCIA_CHARTS = { radar: null, bar: null };
+var EFICIÊNCIA_DATA = null; // Cache dos cálculos
+var EFICIÊNCIA_CHARTS = { radar: null, bar: null };
 
 /**
  * Calcula o Índice DMD de Eficiência Estadual
  * 6 dimensões normalizadas (0-100), pesos totalizando 100%
  */
 function calcularIndiceEficiencia() {
-  if (EFICIENCIA_DATA) return EFICIENCIA_DATA; // Cache
+  if (EFICIÊNCIA_DATA) return EFICIÊNCIA_DATA; // Cache
 
   var UFS = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO'];
   
@@ -15743,7 +15743,7 @@ function calcularIndiceEficiencia() {
   // 6. Adicionar posição
   resultado.forEach(function(r, i) { r.posicao = i + 1; });
 
-  EFICIENCIA_DATA = resultado;
+  EFICIÊNCIA_DATA = resultado;
   return resultado;
 }
 
@@ -15856,11 +15856,11 @@ function renderRadarEficiencia(dados, uf) {
   var ctx = document.getElementById('radar-eficiencia').getContext('2d');
 
   // Destruir chart anterior
-  if (EFICIENCIA_CHARTS.radar) {
-    EFICIENCIA_CHARTS.radar.destroy();
+  if (EFICIÊNCIA_CHARTS.radar) {
+    EFICIÊNCIA_CHARTS.radar.destroy();
   }
 
-  EFICIENCIA_CHARTS.radar = new Chart(ctx, {
+  EFICIÊNCIA_CHARTS.radar = new Chart(ctx, {
     type: 'radar',
     data: {
       labels: ['Orçamento', 'Glosa', 'ESF', 'Leitos', 'DCNT', 'CAPS'],
@@ -15921,8 +15921,8 @@ function renderBarEficiencia(dados) {
   var ctx = document.getElementById('bar-eficiencia').getContext('2d');
 
   // Destruir chart anterior
-  if (EFICIENCIA_CHARTS.bar) {
-    EFICIENCIA_CHARTS.bar.destroy();
+  if (EFICIÊNCIA_CHARTS.bar) {
+    EFICIÊNCIA_CHARTS.bar.destroy();
   }
 
   var labels = dados.map(function(d) { return d.uf; });
@@ -15933,7 +15933,7 @@ function renderBarEficiencia(dados) {
     return '#FF3D5C';
   });
 
-  EFICIENCIA_CHARTS.bar = new Chart(ctx, {
+  EFICIÊNCIA_CHARTS.bar = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: labels,
@@ -17123,7 +17123,7 @@ function renderSecaoIndice() {
           <th onclick="qualSort('_sih_custo')" style="cursor:pointer;padding:8px 6px">Custo/AIH ↕</th>
           <th onclick="qualSort('_sih_let')" style="cursor:pointer;padding:8px 6px">Let.Hosp% ↕</th>
           <th onclick="qualSort('let_pneum')" style="cursor:pointer;padding:8px 6px">Let.Pneum% ↕</th>
-          <th onclick="qualSort('internacoes_av')" style="cursor:pointer;padding:8px 6px">Int.Evit. ↕</th>
+          <th onclick="qualSort('internações_av')" style="cursor:pointer;padding:8px 6px">Int.Evit. ↕</th>
         </tr></thead>
         <tbody id="qual-tbody"></tbody>
       </table>
@@ -17410,7 +17410,7 @@ function qualRender(){
   var sctx=document.getElementById('qual-scatter');
   if(sctx){
     if(window._qualScatter)window._qualScatter.destroy();
-    var ufAgg={};data.forEach(function(m){if(!ufAgg[m.uf])ufAgg[m.uf]={let_p:[],int_ev:[],pop:0};ufAgg[m.uf].let_p.push(parseFloat(m.let_pneum)||0);ufAgg[m.uf].int_ev.push(parseFloat(m.internacoes_av)||0);ufAgg[m.uf].pop+=(parseInt(m.pop)||0);});
+    var ufAgg={};data.forEach(function(m){if(!ufAgg[m.uf])ufAgg[m.uf]={let_p:[],int_ev:[],pop:0};ufAgg[m.uf].let_p.push(parseFloat(m.let_pneum)||0);ufAgg[m.uf].int_ev.push(parseFloat(m.internações_av)||0);ufAgg[m.uf].pop+=(parseInt(m.pop)||0);});
     var bubbles=Object.keys(ufAgg).map(function(u){var d=ufAgg[u];var avgL=d.let_p.reduce(function(a,b){return a+b;},0)/d.let_p.length*100;var avgI=d.int_ev.reduce(function(a,b){return a+b;},0)/d.int_ev.length;return{x:avgL,y:avgI,r:Math.max(4,Math.sqrt(d.pop/500000)*8),label:u};});
     window._qualScatter=new Chart(sctx.getContext('2d'),{type:'bubble',data:{datasets:[{label:'UFs',data:bubbles,backgroundColor:'rgba(233,30,99,0.4)',borderColor:'#e91e63',borderWidth:2,borderRadius:6,borderSkipped:false}]},options:{responsive:true,animation:{duration:800,easing:'easeOutQuart'},maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'Letalidade Pneumonia vs Internações Evitáveis por UF',color:'#e5e7eb',font:{size:13}},tooltip:{backgroundColor:'rgba(13,27,42,0.95)',titleColor:'#00C6BD',bodyColor:'#e5e7eb',borderColor:'#00C6BD44',borderWidth:1,padding:10,callbacks:{label:function(c){return[c.raw.label,'Let. Pneum: '+c.raw.x.toFixed(1)+'%','Int. Evit: '+c.raw.y.toFixed(0)];}}},datalabels:{display:false}},scales:{x:{title:{display:true,text:'Letalidade Pneumonia (%)',color:'#9ca3af',font:{size:11}},ticks:{color:'#9ca3af'},grid:{color:'rgba(255,255,255,0.05)'}},y:{title:{display:true,text:'Internações Evitáveis (média mun.)',color:'#9ca3af',font:{size:11}},ticks:{color:'#9ca3af'},grid:{color:'rgba(255,255,255,0.05)'}}}},plugins:[{afterDatasetsDraw:function(chart){var ctx2=chart.ctx;ctx2.font='bold 9px sans-serif';ctx2.fillStyle='#e5e7eb';ctx2.textAlign='center';chart.data.datasets[0].data.forEach(function(d,i){var meta=chart.getDatasetMeta(0).data[i];if(meta)ctx2.fillText(d.label,meta.x,meta.y-d.r-3);});}}]});
   }
@@ -17428,12 +17428,12 @@ function qualRender(){
     var semHospTip='title="Município sem hospital SUS próprio — internações ocorrem em municípios vizinhos"';
     var semHospTag='<span style="color:#555;font-size:0.78em;cursor:help" '+semHospTip+'>sem hosp.</span>';
     tb.innerHTML=page.map(function(m,i){var bg=i%2===0?'background:var(--bg2)':'background:var(--bg3)';var sh=m._sih_aih===0;
-      return '<tr style="'+bg+'"><td style="padding:6px 4px;color:var(--lit)">'+m.m+'</td><td style="padding:6px 4px;text-align:center;color:var(--mid)">'+m.uf+'</td><td style="padding:6px 4px;text-align:right;color:var(--mid)">'+(parseInt(m.pop)||0).toLocaleString('pt-BR')+'</td><td style="padding:6px 4px;text-align:right;'+(sh?'':'color:#42a5f5;font-weight:600')+'">'+(sh?semHospTag:m._sih_aih.toLocaleString('pt-BR'))+'</td><td style="padding:6px 4px;text-align:right;color:'+(sh?'#555':_semaforo(m._sih_custo,1500,2000,true))+'">'+(sh?semHospTag:'R$'+m._sih_custo.toFixed(0))+'</td><td style="padding:6px 4px;text-align:right;color:'+(sh?'#555':_semaforo(m._sih_let,4,6,true))+'">'+(sh?semHospTag:m._sih_let.toFixed(1)+'%')+'</td><td style="padding:6px 4px;text-align:right;color:'+_semaforo((parseFloat(m.let_pneum)||0)*100,7,15,true)+'">'+((parseFloat(m.let_pneum)||0)*100).toFixed(1)+'%</td><td style="padding:6px 4px;text-align:right;color:var(--lit)">'+(parseInt(m.internacoes_av)||0)+'</td></tr>';}).join('');
+      return '<tr style="'+bg+'"><td style="padding:6px 4px;color:var(--lit)">'+m.m+'</td><td style="padding:6px 4px;text-align:center;color:var(--mid)">'+m.uf+'</td><td style="padding:6px 4px;text-align:right;color:var(--mid)">'+(parseInt(m.pop)||0).toLocaleString('pt-BR')+'</td><td style="padding:6px 4px;text-align:right;'+(sh?'':'color:#42a5f5;font-weight:600')+'">'+(sh?semHospTag:m._sih_aih.toLocaleString('pt-BR'))+'</td><td style="padding:6px 4px;text-align:right;color:'+(sh?'#555':_semaforo(m._sih_custo,1500,2000,true))+'">'+(sh?semHospTag:'R$'+m._sih_custo.toFixed(0))+'</td><td style="padding:6px 4px;text-align:right;color:'+(sh?'#555':_semaforo(m._sih_let,4,6,true))+'">'+(sh?semHospTag:m._sih_let.toFixed(1)+'%')+'</td><td style="padding:6px 4px;text-align:right;color:'+_semaforo((parseFloat(m.let_pneum)||0)*100,7,15,true)+'">'+((parseFloat(m.let_pneum)||0)*100).toFixed(1)+'%</td><td style="padding:6px 4px;text-align:right;color:var(--lit)">'+(parseInt(m.internações_av)||0)+'</td></tr>';}).join('');
   }
   var pg=document.getElementById('qual-pager');if(pg){var tp=Math.ceil(data.length/_PAGE_SIZE);pg.innerHTML='<span style="color:var(--mid);font-size:0.8em">Pág '+(_qualPage+1)+'/'+tp+' ('+data.length+' mun.)</span>';}
 }
 function qualSort(k){if(_qualSortKey===k)_qualSortAsc=!_qualSortAsc;else{_qualSortKey=k;_qualSortAsc=false;}_qualPage=0;qualRender();}
-function qualExport(){var d=_allMunis();var csv='Município,UF,Pop,Let.Pneum%,Let.Sepse%,Let.Dengue%,Int.Evitáveis,SIH Score\n';d.forEach(function(m){csv+='"'+m.m+'",'+m.uf+','+(m.pop||0)+','+((parseFloat(m.let_pneum)||0)*100).toFixed(2)+','+((parseFloat(m.let_sepse)||0)*100).toFixed(2)+','+((parseFloat(m.let_dengue)||0)*100).toFixed(2)+','+(m.internacoes_av||0)+','+(parseFloat(m.sih_score)||0).toFixed(1)+'\n';});var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='dmd_qualidade_assistencial.csv';a.click();}
+function qualExport(){var d=_allMunis();var csv='Município,UF,Pop,Let.Pneum%,Let.Sepse%,Let.Dengue%,Int.Evitáveis,SIH Score\n';d.forEach(function(m){csv+='"'+m.m+'",'+m.uf+','+(m.pop||0)+','+((parseFloat(m.let_pneum)||0)*100).toFixed(2)+','+((parseFloat(m.let_sepse)||0)*100).toFixed(2)+','+((parseFloat(m.let_dengue)||0)*100).toFixed(2)+','+(m.internações_av||0)+','+(parseFloat(m.sih_score)||0).toFixed(1)+'\n';});var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='dmd_qualidade_assistencial.csv';a.click();}
 
 /* ═══ IDH HOSPITALAR ═══ */
 function initIDHH(){_fillUFSelect('idhh-uf-sel');idhhRender();}
@@ -17923,7 +17923,7 @@ function gerarRelatorioPDF(uf){
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ══════════════════════════════════════════════════════════════
-// DMD SAUDE BRASIL — CONEXAO SUPABASE (anon key — segura para frontend)
+// DMD SAÚDE BRASIL — CONEXAO SUPABASE (anon key — segura para frontend)
 // ══════════════════════════════════════════════════════════════
 var SUPA_URL = 'https://xxckbdilszvfmzyoquze.supabase.co';
 var SUPA_KEY = 'sb_publishable_6zHUr_Olsac5o7dMc_LLug_2tK7boQu';
