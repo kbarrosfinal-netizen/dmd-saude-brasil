@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
-        // 1. Forçar texto escuro em TODOS os elementos dentro de .module
-        document.querySelectorAll('.module').forEach(function(mod) {
+        // 1. Forçar texto escuro em TODOS os elementos dentro de .shell-module.active
+        document.querySelectorAll('.shell-module.active').forEach(function(mod) {
             mod.querySelectorAll('*').forEach(function(el) {
                 var cs = getComputedStyle(el);
                 var bg = cs.backgroundColor;
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // 3. Cards de alerta escuros → fundo branco
-        document.querySelectorAll('.module [style*="background"]').forEach(function(el) {
+        document.querySelectorAll('.shell-module.active [style*="background"]').forEach(function(el) {
             var bg = getComputedStyle(el).backgroundColor;
             if (isDarkBg(bg) && !isNavOrHeader(el) && !isBadge(el)) {
                 el.style.setProperty('background', '#FFFFFF', 'important');
@@ -46,6 +46,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
         console.log('[DMD Fix] Cores corrigidas');
     }, 1500);
+
+    // Re-executar fix a cada troca de aba
+    window._dmdFixColors = function() {
+        setTimeout(function() {
+            document.querySelectorAll('.shell-module.active').forEach(function(mod) {
+                // Pular mapa (deve ficar escuro)
+                if (mod.id === 'mod-mapa') return;
+                mod.querySelectorAll('*').forEach(function(el) {
+                    var cs = getComputedStyle(el);
+                    var bg = cs.backgroundColor;
+                    var color = cs.color;
+                    if (isLightBg(bg) && isLightColor(color)) {
+                        var tag = el.tagName;
+                        if (tag === 'H1' || tag === 'H2' || tag === 'H3' || tag === 'H4') {
+                            el.style.setProperty('color', '#0D1B2A', 'important');
+                        } else if (tag === 'TH') {
+                            // Não mexer em thead
+                        } else {
+                            el.style.setProperty('color', '#333333', 'important');
+                        }
+                    }
+                });
+            });
+            // Fix cards escuros
+            document.querySelectorAll('.shell-module.active [style*="background"]').forEach(function(el) {
+                var bg = getComputedStyle(el).backgroundColor;
+                if (isDarkBg(bg) && !isNavOrHeader(el) && !isBadge(el)) {
+                    el.style.setProperty('background', '#FFFFFF', 'important');
+                    el.style.setProperty('border', '1px solid #E0E6EC', 'important');
+                    el.style.setProperty('box-shadow', '0 2px 8px rgba(0,0,0,0.06)', 'important');
+                }
+            });
+        }, 800);
+    };
 
     function isLightBg(bg) {
         if (!bg || bg === 'transparent' || bg === 'rgba(0, 0, 0, 0)') return true;
